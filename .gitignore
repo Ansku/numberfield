@@ -1,0 +1,9 @@
+/.apt_generated/
+/.settings/
+/WebContent/WEB-INF/
+/WebContent/VAADIN/widgetsets/
+*/rebel.xml
+.project
+.classpath
+.factorypath
+*.launch
