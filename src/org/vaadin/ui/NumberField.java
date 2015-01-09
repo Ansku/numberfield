@@ -20,7 +20,9 @@ package org.vaadin.ui;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.vaadin.ui.shared.numberfield.Constants;
@@ -31,6 +33,7 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.converter.Converter.ConversionException;
+import com.vaadin.data.util.converter.StringToDoubleConverter;
 import com.vaadin.server.PaintException;
 import com.vaadin.server.PaintTarget;
 import com.vaadin.ui.TextField;
@@ -91,8 +94,9 @@ public class NumberField extends TextField {
     // Server-side validator
     private Validator numberValidator;
 
-    // All NumberField instances share the same formatter
+    // All NumberField instances share the same formatter and converter
     private static DecimalFormat decimalFormat = new DecimalFormat();
+    private static StringToDoubleConverter converter;
 
     // Settings needed both on server- and client-side
     private NumberFieldAttributes attributes = new NumberFieldAttributes();
@@ -166,6 +170,54 @@ public class NumberField extends TextField {
         // Member "attributes" defines some defaults as well!
     }
 
+    @Override
+    public void setConverter(Class<?> datamodelType) {
+        if (datamodelType.isAssignableFrom(Double.class)) {
+            if (converter == null) {
+                createConverter();
+            }
+            setConverter(converter);
+        } else {
+            super.setConverter(datamodelType);
+        }
+    }
+
+    /**
+     * Creates a converter that always uses US Locale. This is necessary because
+     * localised internal values break validation.
+     *
+     * FIXME: This is a quick hack to fix problems with binding. Correct
+     * solution would be to change the validation to respect localised values.
+     */
+    private void createConverter() {
+        converter = new StringToDoubleConverter() {
+            @Override
+            protected NumberFormat getFormat(Locale locale) {
+                return super.getFormat(Locale.US);
+            }
+
+            @Override
+            public Double convertToModel(String value,
+                    Class<? extends Double> targetType, Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                return super.convertToModel(value, targetType, Locale.US);
+            }
+
+            @Override
+            public String convertToPresentation(Double value,
+                    Class<? extends String> targetType, Locale locale)
+                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                String result = super.convertToPresentation(value, targetType,
+                        Locale.US);
+                if (result != null) {
+                    // remove thousand groupings
+                    result = result.replaceAll(",", "");
+                }
+                return result;
+            }
+        };
+    }
+
     private void createNumberValidator() {
         // Create our server-side validator
         numberValidator = new Validator() {
@@ -187,6 +239,11 @@ public class NumberField extends TextField {
     private boolean validateValue(Object value) {
         if (value == null || "".equals(value)) {
             return !isRequired();
+        }
+
+        // FIXME: This is a hack to get around converters.
+        if (value instanceof Double) {
+            value = BigDecimal.valueOf((Double) value).toPlainString();
         }
 
         if (!(value instanceof String)) {
