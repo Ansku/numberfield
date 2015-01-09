@@ -343,12 +343,15 @@ public class NumberField extends TextField {
      */
     public void setValue(Double newValue) throws ReadOnlyException,
             ConversionException {
-        // Use BigDecimal to avoid scientific notation and thus allow
-        // NumberValidator to work properly
-        String noExponent = BigDecimal.valueOf(newValue).toPlainString();
+        if (newValue == null) {
+            super.setValue(null);
+        } else {
+            // Use BigDecimal to avoid scientific notation and thus allow
+            // NumberValidator to work properly
+            String noExponent = BigDecimal.valueOf(newValue).toPlainString();
 
-        String localizedValue = replacePointWithDecimalSeparator(noExponent);
-        super.setValue(localizedValue);
+            super.setValue(noExponent);
+        }
     }
 
     /**
