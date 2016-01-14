@@ -1,6 +1,6 @@
 /*
  * Copyright 2012 essendi it GmbH
- * Copyright 2014 Vaadin Ltd.
+ * Copyright 2014-2016 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,7 @@
 package org.vaadin.ui.client.numberfield;
 
 import org.vaadin.ui.shared.numberfield.Constants;
-import org.vaadin.ui.shared.numberfield.NumberFieldAttributes;
+import org.vaadin.ui.shared.numberfield.NumberFieldState;
 import org.vaadin.ui.shared.numberfield.NumberValidator;
 
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -35,7 +35,7 @@ import com.vaadin.client.ui.VTextField;
 public class VNumberField extends VTextField {
 
     /** For internal use only. May be removed or replaced in the future. */
-    public NumberFieldAttributes attributes = new NumberFieldAttributes();
+    public NumberFieldState attributes = new NumberFieldState();
 
     private KeyPressHandler keyPressHandler = new KeyPressHandler() {
         /**

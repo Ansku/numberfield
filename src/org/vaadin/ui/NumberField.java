@@ -1,6 +1,6 @@
 /*
  * Copyright 2012 essendi it GmbH
- * Copyright 2014 Vaadin Ltd.
+ * Copyright 2014-2016 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,17 +25,15 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.vaadin.ui.shared.numberfield.Constants;
-import org.vaadin.ui.shared.numberfield.NumberFieldAttributes;
+import org.vaadin.ui.shared.numberfield.NumberFieldState;
 import org.vaadin.ui.shared.numberfield.NumberValidator;
 
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.StringToDoubleConverter;
-import com.vaadin.server.PaintException;
-import com.vaadin.server.PaintTarget;
 import com.vaadin.ui.TextField;
 
 /**
@@ -98,9 +96,6 @@ public class NumberField extends TextField {
     private static DecimalFormat decimalFormat = new DecimalFormat();
     private static StringToDoubleConverter converter;
 
-    // Settings needed both on server- and client-side
-    private NumberFieldAttributes attributes = new NumberFieldAttributes();
-
     // Settings needed only on server-side and therefore not part of
     // NumberFieldAttributes
     private String errorText = "Invalid number";
@@ -127,6 +122,13 @@ public class NumberField extends TextField {
         super();
         setImmediate(true);
         setDefaultValues();
+        addValueChangeListener(new Property.ValueChangeListener() {
+
+            @Override
+            public void valueChange(Property.ValueChangeEvent event) {
+                updateFormattedValue();
+            }
+        });
     }
 
     /**
@@ -152,6 +154,16 @@ public class NumberField extends TextField {
         setCaption(caption);
     }
 
+    @Override
+    protected NumberFieldState getState() {
+        return (NumberFieldState) super.getState();
+    }
+
+    @Override
+    protected NumberFieldState getState(boolean markAsDirty) {
+        return (NumberFieldState) super.getState(markAsDirty);
+    }
+
     private void setDefaultValues() {
         setGroupingUsed(true);
         groupingSize = 3;
@@ -162,10 +174,10 @@ public class NumberField extends TextField {
         setNullSettingAllowed(true);
 
         // Set the decimal/grouping separator to the user's default locale
-        attributes.setDecimalSeparator(DecimalFormatSymbols.getInstance()
-                .getDecimalSeparator());
-        attributes.setGroupingSeparator(DecimalFormatSymbols.getInstance()
-                .getGroupingSeparator());
+        getState().setDecimalSeparator(
+                DecimalFormatSymbols.getInstance().getDecimalSeparator());
+        getState().setGroupingSeparator(
+                DecimalFormatSymbols.getInstance().getGroupingSeparator());
 
         // Member "attributes" defines some defaults as well!
     }
@@ -253,10 +265,10 @@ public class NumberField extends TextField {
         final boolean isValid;
         if (isDecimalAllowed()) {
             isValid = NumberValidator.isValidDecimal((String) value,
-                    attributes, false);
+                    getState(), false);
         } else {
             isValid = NumberValidator.isValidInteger((String) value,
-                    attributes, false);
+                    getState(), false);
         }
 
         return isValid;
@@ -274,33 +286,8 @@ public class NumberField extends TextField {
         return validateValue(getValue());
     }
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        super.paintContent(target);
-
-        // Paint any component specific content by setting attributes.
-        // These attributes can be read in the widget's updateFromUIDL().
-        // paintContent() is called when the contents of the component should be
-        // painted in response to the component first being shown or having been
-        // altered so that its visual representation is changed.
-        target.addAttribute(Constants.ATTRIBUTE_ALLOW_DECIMALS,
-                isDecimalAllowed());
-        target.addAttribute(Constants.ATTRIBUTE_ALLOW_NEGATIVES,
-                isNegativeAllowed());
-        target.addAttribute(Constants.ATTRIBUTE_DECIMAL_PRECISION,
-                getDecimalPrecision());
-        target.addAttribute(Constants.ATTRIBUTE_DECIMAL_SEPARATOR,
-                getDecimalSeparator());
-        target.addAttribute(Constants.ATTRIBUTE_USE_GROUPING, isGroupingUsed());
-        target.addAttribute(Constants.ATTRIBUTE_GROUPING_SEPARATOR,
-                getGroupingSeparator());
-        target.addAttribute(Constants.ATTRIBUTE_MIN_VALUE, getMinValue());
-        target.addAttribute(Constants.ATTRIBUTE_MAX_VALUE, getMaxValue());
-
-        // Use DecimalFormat to format the user-input and send the
-        // formatted value back to client.
-        target.addAttribute(Constants.ATTRIBUTE_SERVER_FORMATTED_VALUE,
-                getValueAsFormattedDecimalNumber());
+    private void updateFormattedValue() {
+        getState().formattedValue = getValueAsFormattedDecimalNumber();
     }
 
     private String getValueAsFormattedDecimalNumber() {
@@ -350,7 +337,7 @@ public class NumberField extends TextField {
 
     private void setDecimalFormatToNumberFieldAttributes() {
         synchronized (decimalFormat) {
-            decimalFormat.setGroupingUsed(attributes.isGroupingUsed());
+            decimalFormat.setGroupingUsed(getState().isGroupingUsed());
             decimalFormat.setGroupingSize(groupingSize);
             decimalFormat.setMinimumFractionDigits(minimumFractionDigits);
             decimalFormat
@@ -359,8 +346,8 @@ public class NumberField extends TextField {
             // Adapt decimal format symbols
             DecimalFormatSymbols symbols = decimalFormat
                     .getDecimalFormatSymbols();
-            symbols.setDecimalSeparator(attributes.getDecimalSeparator());
-            symbols.setGroupingSeparator(attributes.getGroupingSeparator());
+            symbols.setDecimalSeparator(getState().getDecimalSeparator());
+            symbols.setGroupingSeparator(getState().getGroupingSeparator());
             decimalFormat.setDecimalFormatSymbols(symbols);
         }
     }
@@ -448,7 +435,7 @@ public class NumberField extends TextField {
     }
 
     /**
-     * See {@link NumberFieldAttributes#setDecimalAllowed(boolean)}.
+     * See {@link NumberFieldState#setDecimalAllowed(boolean)}.
      * <p>
      * As a side-effect, the minimum number of digits allowed in the fraction
      * portion of a number is set to 0 if decimalAllowed is false (so that
@@ -456,18 +443,17 @@ public class NumberField extends TextField {
      * </p>
      */
     public void setDecimalAllowed(boolean decimalAllowed) {
-        attributes.setDecimalAllowed(decimalAllowed);
+        getState().setDecimalAllowed(decimalAllowed);
         if (!decimalAllowed) {
             setMinimumFractionDigits(0);
         }
-        markAsDirty();
     }
 
     /**
-     * See {@link NumberFieldAttributes#isDecimalAllowed()}.
+     * See {@link NumberFieldState#isDecimalAllowed()}.
      */
     public boolean isDecimalAllowed() {
-        return attributes.isDecimalAllowed();
+        return getState(false).isDecimalAllowed();
     }
 
     /**
@@ -488,18 +474,17 @@ public class NumberField extends TextField {
     }
 
     /**
-     * See {@link NumberFieldAttributes#isGroupingUsed()}.
+     * See {@link NumberFieldState#isGroupingUsed()}.
      */
     public boolean isGroupingUsed() {
-        return attributes.isGroupingUsed();
+        return getState(false).isGroupingUsed();
     }
 
     /**
-     * See {@link NumberFieldAttributes#setGroupingUsed(boolean)}.
+     * See {@link NumberFieldState#setGroupingUsed(boolean)}.
      */
     public void setGroupingUsed(boolean group) {
-        attributes.setGroupingUsed(group);
-        markAsDirty();
+        getState().setGroupingUsed(group);
     }
 
     /**
@@ -514,7 +499,7 @@ public class NumberField extends TextField {
      */
     public void setGroupingSize(int groupingSize) {
         this.groupingSize = groupingSize;
-        markAsDirty();
+        updateFormattedValue();
     }
 
     /**
@@ -529,7 +514,7 @@ public class NumberField extends TextField {
      */
     public void setMinimumFractionDigits(int minimumDigits) {
         minimumFractionDigits = minimumDigits;
-        markAsDirty();
+        updateFormattedValue();
     }
 
     /**
@@ -544,36 +529,35 @@ public class NumberField extends TextField {
      */
     public void setDecimalSeparatorAlwaysShown(boolean showAlways) {
         decimalSeparatorAlwaysShown = showAlways;
-        markAsDirty();
+        updateFormattedValue();
     }
 
     /**
-     * See {@link NumberFieldAttributes#getDecimalPrecision()}.
+     * See {@link NumberFieldState#getDecimalPrecision()}.
      */
     public int getDecimalPrecision() {
-        return attributes.getDecimalPrecision();
+        return getState(false).getDecimalPrecision();
     }
 
     /**
-     * See {@link NumberFieldAttributes#setDecimalPrecision(int)}.
+     * See {@link NumberFieldState#setDecimalPrecision(int)}.
      */
     public void setDecimalPrecision(int maximumDigits) {
-        attributes.setDecimalPrecision(maximumDigits);
-        markAsDirty();
+        getState().setDecimalPrecision(maximumDigits);
     }
 
     /**
-     * See {@link NumberFieldAttributes#getDecimalSeparator()}.
+     * See {@link NumberFieldState#getDecimalSeparator()}.
      */
     public char getDecimalSeparator() {
-        return attributes.getDecimalSeparator();
+        return getState(false).getDecimalSeparator();
     }
 
     /**
-     * See {@link NumberFieldAttributes#getEscapedDecimalSeparator()}.
+     * See {@link NumberFieldState#getEscapedDecimalSeparator()}.
      */
     public String getEscapedDecimalSeparator() {
-        return attributes.getEscapedDecimalSeparator();
+        return getState(false).getEscapedDecimalSeparator();
     }
 
     /**
@@ -582,8 +566,7 @@ public class NumberField extends TextField {
      */
     public void setDecimalSeparator(char newSeparator) {
         replaceSeparatorInField(getDecimalSeparator(), newSeparator);
-        attributes.setDecimalSeparator(newSeparator);
-        markAsDirty();
+        getState().setDecimalSeparator(newSeparator);
     }
 
     private void replaceSeparatorInField(char oldSeparator, char newSeparator) {
@@ -596,17 +579,17 @@ public class NumberField extends TextField {
     }
 
     /**
-     * See {@link NumberFieldAttributes#getGroupingSeparator()}.
+     * See {@link NumberFieldState#getGroupingSeparator()}.
      */
     public char getGroupingSeparator() {
-        return attributes.getGroupingSeparator();
+        return getState(false).getGroupingSeparator();
     }
 
     /**
-     * See {@link NumberFieldAttributes#getEscapedGroupingSeparator()}.
+     * See {@link NumberFieldState#getEscapedGroupingSeparator()}.
      */
     public String getEscapedGroupingSeparator() {
-        return attributes.getEscapedGroupingSeparator();
+        return getState(false).getEscapedGroupingSeparator();
     }
 
     /**
@@ -615,53 +598,49 @@ public class NumberField extends TextField {
      */
     public void setGroupingSeparator(char newSeparator) {
         replaceSeparatorInField(getGroupingSeparator(), newSeparator);
-        attributes.setGroupingSeparator(newSeparator);
-        markAsDirty();
+        getState().setGroupingSeparator(newSeparator);
     }
 
     /**
-     * See {@link NumberFieldAttributes#getMinValue()}.
+     * See {@link NumberFieldState#getMinValue()}.
      */
     public double getMinValue() {
-        return attributes.getMinValue();
+        return getState(false).getMinValue();
     }
 
     /**
-     * See {@link NumberFieldAttributes#setMinValue(double)}.
+     * See {@link NumberFieldState#setMinValue(double)}.
      */
     public void setMinValue(double minValue) {
-        attributes.setMinValue(minValue);
-        markAsDirty();
+        getState().setMinValue(minValue);
     }
 
     /**
-     * See {@link NumberFieldAttributes#getMaxValue()}.
+     * See {@link NumberFieldState#getMaxValue()}.
      */
     public double getMaxValue() {
-        return attributes.getMaxValue();
+        return getState(false).getMaxValue();
     }
 
     /**
-     * See {@link NumberFieldAttributes#setMaxValue(double)}.
+     * See {@link NumberFieldState#setMaxValue(double)}.
      */
     public void setMaxValue(double maxValue) {
-        attributes.setMaxValue(maxValue);
-        markAsDirty();
+        getState().setMaxValue(maxValue);
     }
 
     /**
-     * See {@link NumberFieldAttributes#isNegativeAllowed()}.
+     * See {@link NumberFieldState#isNegativeAllowed()}.
      */
     public boolean isNegativeAllowed() {
-        return attributes.isNegativeAllowed();
+        return getState(false).isNegativeAllowed();
     }
 
     /**
-     * See {@link NumberFieldAttributes#setNegativeAllowed(boolean)}.
+     * See {@link NumberFieldState#setNegativeAllowed(boolean)}.
      */
     public void setNegativeAllowed(boolean negativeAllowed) {
-        attributes.setNegativeAllowed(negativeAllowed);
-        markAsDirty();
+        getState().setNegativeAllowed(negativeAllowed);
     }
 
     /**

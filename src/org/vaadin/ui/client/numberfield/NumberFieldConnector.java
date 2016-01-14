@@ -1,6 +1,6 @@
 /*
  * Copyright 2012 essendi it GmbH
- * Copyright 2014 Vaadin Ltd.
+ * Copyright 2014-2016 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,10 +18,10 @@
 package org.vaadin.ui.client.numberfield;
 
 import org.vaadin.ui.NumberField;
-import org.vaadin.ui.shared.numberfield.Constants;
+import org.vaadin.ui.shared.numberfield.NumberFieldState;
 
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.UIDL;
+import com.vaadin.client.annotations.OnStateChange;
+import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.textfield.TextFieldConnector;
 import com.vaadin.shared.ui.Connect;
 import com.vaadin.shared.ui.Connect.LoadStyle;
@@ -30,69 +30,24 @@ import com.vaadin.shared.ui.Connect.LoadStyle;
 public class NumberFieldConnector extends TextFieldConnector {
 
     @Override
-    public void updateFromUIDL(UIDL uidl, ApplicationConnection client) {
-        super.updateFromUIDL(uidl, client);
-        /*
-         * updateFromUIDL() is calling client.updateComponent() -> if this
-         * method returns, executing processAttributesFromServer() would be not
-         * needed, but we dunno if it returns or not. So we use hasAttribute()
-         * before getXAttribute() calls in the processAttributesFromServer()
-         * method to avoid setting invalid/undefined data.
-         */
-        processAttributesFromServer(uidl);
+    public void onStateChanged(StateChangeEvent stateChangeEvent) {
+        super.onStateChanged(stateChangeEvent);
+        getWidget().attributes = getState();
     }
 
-    private void processAttributesFromServer(UIDL uidl) {
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_ALLOW_NEGATIVES)) {
-            getWidget().attributes.setNegativeAllowed(uidl
-                    .getBooleanAttribute(Constants.ATTRIBUTE_ALLOW_NEGATIVES));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_DECIMAL_PRECISION)) {
-            getWidget().attributes.setDecimalPrecision(uidl
-                    .getIntAttribute(Constants.ATTRIBUTE_DECIMAL_PRECISION));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_MIN_VALUE)) {
-            getWidget().attributes.setMinValue(uidl
-                    .getDoubleAttribute(Constants.ATTRIBUTE_MIN_VALUE));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_MAX_VALUE)) {
-            getWidget().attributes.setMaxValue(uidl
-                    .getDoubleAttribute(Constants.ATTRIBUTE_MAX_VALUE));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_ALLOW_DECIMALS)) {
-            getWidget().attributes.setDecimalAllowed(uidl
-                    .getBooleanAttribute(Constants.ATTRIBUTE_ALLOW_DECIMALS));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_DECIMAL_SEPARATOR)) {
-            getWidget().attributes.setDecimalSeparator((char) uidl
-                    .getIntAttribute(Constants.ATTRIBUTE_DECIMAL_SEPARATOR));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_USE_GROUPING)) {
-            getWidget().attributes.setGroupingUsed(uidl
-                    .getBooleanAttribute(Constants.ATTRIBUTE_USE_GROUPING));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_GROUPING_SEPARATOR)) {
-            getWidget().attributes.setGroupingSeparator((char) uidl
-                    .getIntAttribute(Constants.ATTRIBUTE_GROUPING_SEPARATOR));
-        }
-
-        if (uidl.hasAttribute(Constants.ATTRIBUTE_SERVER_FORMATTED_VALUE)) {
-            getWidget()
-                    .setValue(
-                            uidl.getStringAttribute(Constants.ATTRIBUTE_SERVER_FORMATTED_VALUE));
-        }
+    @OnStateChange("formattedValue")
+    private void formattedValueChanged() {
+        getWidget().setValue(getState().formattedValue);
     }
 
     @Override
     public VNumberField getWidget() {
         return (VNumberField) super.getWidget();
+    }
+
+    @Override
+    public NumberFieldState getState() {
+        return (NumberFieldState) super.getState();
     }
 
 }

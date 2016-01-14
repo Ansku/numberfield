@@ -1,6 +1,6 @@
 /*
  * Copyright 2012 essendi it GmbH
- * Copyright 2014 Vaadin Ltd.
+ * Copyright 2014-2016 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,13 +17,13 @@
 
 package org.vaadin.ui.shared.numberfield;
 
-import java.io.Serializable;
+import com.vaadin.shared.ui.textfield.AbstractTextFieldState;
 
 /**
  * Data holder class for the properties of a <code>NumberField</code> instance.
  */
 @SuppressWarnings("serial")
-public class NumberFieldAttributes implements Serializable {
+public class NumberFieldState extends AbstractTextFieldState {
 
     private boolean negativesAllowed = true;
     private boolean decimalsAllowed = true;
@@ -34,6 +34,8 @@ public class NumberFieldAttributes implements Serializable {
     private int decimalPrecision;
     private char decimalSeparator;
     private char groupingSeparator;
+
+    public String formattedValue;
 
     /**
      * @return False to prevent negative numbers, otherwise true.
