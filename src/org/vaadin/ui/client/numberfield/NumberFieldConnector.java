@@ -20,6 +20,8 @@ package org.vaadin.ui.client.numberfield;
 import org.vaadin.ui.NumberField;
 import org.vaadin.ui.shared.numberfield.NumberFieldState;
 
+import com.vaadin.client.ApplicationConnection;
+import com.vaadin.client.UIDL;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.ui.textfield.TextFieldConnector;
@@ -33,6 +35,14 @@ public class NumberFieldConnector extends TextFieldConnector {
     public void onStateChanged(StateChangeEvent stateChangeEvent) {
         super.onStateChanged(stateChangeEvent);
         getWidget().attributes = getState();
+    }
+
+    @Override
+    public void updateFromUIDL(UIDL uidl, ApplicationConnection client) {
+        // ugly workaround for issue where getState().text is used to update
+        // field content at the end of this method
+        getState().text = getState().formattedValue;
+        super.updateFromUIDL(uidl, client);
     }
 
     @OnStateChange("formattedValue")
