@@ -49,11 +49,11 @@ public class VNumberField extends VTextField {
             }
 
             int keyCode = event.getNativeEvent().getKeyCode();
-            if (isControlKey(keyCode) || event.isAnyModifierKeyDown()) {
+            if (isControlKey(keyCode)) {
                 return;
             }
 
-            if (!isValueValid(event)) {
+            if (!isValueValid(event) || event.isAnyModifierKeyDown()) {
                 cancelKey();
             }
         }
