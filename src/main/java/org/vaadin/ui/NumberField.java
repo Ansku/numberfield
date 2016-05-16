@@ -17,17 +17,6 @@
 
 package org.vaadin.ui;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import org.vaadin.ui.shared.numberfield.NumberFieldState;
-import org.vaadin.ui.shared.numberfield.NumberValidator;
-
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
@@ -35,6 +24,16 @@ import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.StringToDoubleConverter;
 import com.vaadin.ui.TextField;
+import org.vaadin.ui.shared.numberfield.NumberFieldState;
+import org.vaadin.ui.shared.numberfield.NumberValidator;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * <p>
@@ -53,13 +52,13 @@ import com.vaadin.ui.TextField;
  * </p>
  * <p>
  * A user-entered value is formatted automatically when the field's focus is
- * lost. <code>NumberField</code> uses {@link DecimalFormat} for formatting and
+ * lost. {@code NumberField} uses {@link DecimalFormat} for formatting and
  * send the formatted value of the input back to client. There's a number of
  * setters to define the format, see the code example below for a general view.
  * </p>
  * <p>
  * Some features in an usage example: <blockquote>
- *
+ * <p>
  * <pre>
  * NumberField numField = new NumberField(); // NumberField extends TextField
  * numField.setDecimalAllowed(true); // not just integers (by default, decimals are
@@ -81,7 +80,7 @@ import com.vaadin.ui.TextField;
  * // whether it is read-only or not
  * numField.removeValidator(); // omit server-side validation
  * </pre>
- *
+ * <p>
  * </blockquote>
  * </p>
  */
@@ -93,19 +92,16 @@ public class NumberField extends TextField {
     private Validator numberValidator;
 
     // All NumberField instances share the same formatter and converter
-    private static DecimalFormat decimalFormat = new DecimalFormat();
+//    private static DecimalFormat decimalFormat = new DecimalFormat();
     private static StringToDoubleConverter converter;
 
     // Settings needed only on server-side and therefore not part of
     // NumberFieldAttributes
     private String errorText = "Invalid number";
-    private int groupingSize;
-    private int minimumFractionDigits;
-    private boolean decimalSeparatorAlwaysShown;
 
     /**
      * <p>
-     * Constructs an empty <code>NumberField</code> with no caption. The field
+     * Constructs an empty {@code NumberField} with no caption. The field
      * is bound to a server-side validator (see
      * {@link #addServerSideValidator()}) and immediate mode is set to true;
      * this is necessary for the validation of the field to occur immediately
@@ -133,7 +129,7 @@ public class NumberField extends TextField {
 
     /**
      * <p>
-     * Constructs an empty <code>NumberField</code> with given caption. The
+     * Constructs an empty {@code NumberField} with given caption. The
      * field is bound to a server-side validator (see
      * {@link #addServerSideValidator()}) and immediate mode is set to true;
      * this is necessary for the validation of the field to occur immediately
@@ -146,8 +142,7 @@ public class NumberField extends TextField {
      * per default.
      * </p>
      *
-     * @param caption
-     *            Sets the component's caption {@code String}.
+     * @param caption Sets the component's caption {@code String}.
      */
     public NumberField(String caption) {
         this();
@@ -166,10 +161,11 @@ public class NumberField extends TextField {
 
     private void setDefaultValues() {
         setGroupingUsed(true);
-        groupingSize = 3;
+        setGroupingSize(3);
         setDecimalPrecision(2);
-        minimumFractionDigits = 0;
-        decimalSeparatorAlwaysShown = false;
+        setMinimumFractionDigits(0);
+        setMaximumFractionDigits(2);
+        setDecimalSeparatorAlwaysShown(false);
         addServerSideValidator();
         setNullSettingAllowed(true);
 
@@ -197,7 +193,7 @@ public class NumberField extends TextField {
     /**
      * Creates a converter that always uses US Locale. This is necessary because
      * localised internal values break validation.
-     *
+     * <p>
      * FIXME: This is a quick hack to fix problems with binding. Correct
      * solution would be to change the validation to respect localised values.
      */
@@ -205,27 +201,27 @@ public class NumberField extends TextField {
         converter = new StringToDoubleConverter() {
             @Override
             protected NumberFormat getFormat(Locale locale) {
-                return super.getFormat(Locale.US);
+                return getDecimalFormat();
             }
 
             @Override
             public Double convertToModel(String value,
                                          Class<? extends Double> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
-                return super.convertToModel(value, targetType, Locale.US);
+
+                try {
+                    return (Double) getDecimalFormat().parse(value);
+                } catch (ParseException e) {
+                    throw new ConversionException("Unable to parse decimal string " + value, e);
+                }
             }
 
             @Override
             public String convertToPresentation(Double value,
                                                 Class<? extends String> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
-                String result = super.convertToPresentation(value, targetType,
-                        Locale.US);
-                if (result != null) {
-                    // remove thousand groupings
-                    result = result.replaceAll(",", "");
-                }
-                return result;
+
+                return getDecimalFormat().format(value);
             }
         };
     }
@@ -255,7 +251,8 @@ public class NumberField extends TextField {
 
         // FIXME: This is a hack to get around converters.
         if (value instanceof Double) {
-            value = BigDecimal.valueOf((Double) value).toPlainString();
+
+            value = getDecimalFormat().format(value);
         }
 
         if (!(value instanceof String)) {
@@ -265,10 +262,10 @@ public class NumberField extends TextField {
         final boolean isValid;
         if (isDecimalAllowed()) {
             isValid = NumberValidator.isValidDecimal((String) value,
-                    getState(), false);
+                    getState(), true);
         } else {
             isValid = NumberValidator.isValidInteger((String) value,
-                    getState(), false);
+                    getState(), true);
         }
 
         return isValid;
@@ -297,10 +294,9 @@ public class NumberField extends TextField {
         }
 
         try {
+            DecimalFormat decimalFormat = getDecimalFormat();
             synchronized (decimalFormat) {
-                setDecimalFormatToNumberFieldAttributes();
-                // Number valueAsNumber = decimalFormat.parse(value);
-                Number valueAsNumber = Double.valueOf(value.toString());
+                Number valueAsNumber = decimalFormat.parse((String) value);
                 return decimalFormat.format(valueAsNumber);
             }
         } catch (Exception e) {
@@ -313,19 +309,15 @@ public class NumberField extends TextField {
     public void changeVariables(Object source, Map<String, Object> variables) {
         if (variables.containsKey("text") && !isReadOnly()) {
             // Workaround so that we can modify the values
-            variables = new HashMap<String, Object>(variables);
+            variables = new HashMap<>(variables);
             // Only do the setting if the string representation of the value
             // has been updated
             String newValue = (String) variables.get("text");
             try {
-                synchronized (decimalFormat) {
-                    setDecimalFormatToNumberFieldAttributes();
                 if (newValue != null && newValue.trim().equals("")) {
                     variables.put("text", null);
                 } else {
-                    Number valueAsNumber = decimalFormat.parse(newValue);
-                        variables.put("text", valueAsNumber.toString());
-                }
+                    variables.put("text", newValue);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -335,21 +327,23 @@ public class NumberField extends TextField {
         super.changeVariables(source, variables);
     }
 
-    private void setDecimalFormatToNumberFieldAttributes() {
-        synchronized (decimalFormat) {
-            decimalFormat.setGroupingUsed(getState().isGroupingUsed());
-            decimalFormat.setGroupingSize(groupingSize);
-            decimalFormat.setMinimumFractionDigits(minimumFractionDigits);
-            decimalFormat
-                    .setDecimalSeparatorAlwaysShown(decimalSeparatorAlwaysShown);
-
-            // Adapt decimal format symbols
-            DecimalFormatSymbols symbols = decimalFormat
-                    .getDecimalFormatSymbols();
-            symbols.setDecimalSeparator(getState().getDecimalSeparator());
-            symbols.setGroupingSeparator(getState().getGroupingSeparator());
+    /**
+     * Recreates a DecimalFormat object based on current state.
+     *
+     * @return
+     */
+    private DecimalFormat getDecimalFormat() {
+        DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance();
+        decimalFormat.setGroupingUsed(getState(false).isGroupingUsed());
+        decimalFormat.setGroupingSize(getState(false).getGroupingSize());
+        decimalFormat.setMinimumFractionDigits(getState(false).getMinimumFractionDigits());
+        decimalFormat.setDecimalSeparatorAlwaysShown(getState(false).isDecimalSeparatorAlwaysShown());
+        decimalFormat.setMaximumFractionDigits(getState(false).getMaximumFractionDigits());
+        DecimalFormatSymbols symbols = decimalFormat.getDecimalFormatSymbols();
+        symbols.setDecimalSeparator(getState(false).getDecimalSeparator());
+        symbols.setGroupingSeparator(getState(false).getGroupingSeparator());
         decimalFormat.setDecimalFormatSymbols(symbols);
-        }
+        return decimalFormat;
     }
 
     /**
@@ -358,7 +352,7 @@ public class NumberField extends TextField {
      * integer/decimal number?) provides feedback about bad input. If the input
      * is recognized as invalid, an {@link InvalidValueException} is thrown,
      * which reports an error message and mark the field as invalid. The error
-     * message can be set with {@link #setErrorText()}.
+     * message can be set with {@link #setErrorText(String)}
      * </p>
      * <p>
      * To have the validation done immediately when the field loses focus,
@@ -382,18 +376,15 @@ public class NumberField extends TextField {
     }
 
     /**
-     * @param newValue
-     *            Sets the value of the field to a double.
+     * @param newValue Sets the value of the field to a double.
      */
     public void setValue(Double newValue) throws ReadOnlyException,
             ConversionException {
         if (newValue == null) {
             super.setValue(null);
         } else {
-            // Use BigDecimal to avoid scientific notation and thus allow
-            // NumberValidator to work properly
-            String noExponent = BigDecimal.valueOf(newValue).toPlainString();
-
+            DecimalFormat decimalFormat = getDecimalFormat();
+            String noExponent = decimalFormat.format(newValue);
             super.setValue(noExponent);
         }
     }
@@ -402,8 +393,7 @@ public class NumberField extends TextField {
      * Sets the value of the field, regardless whether the field is in read-only
      * mode.
      *
-     * @param newValue
-     *            The field's new String value.
+     * @param newValue The field's new String value.
      */
     public void setValueIgnoreReadOnly(String newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -420,8 +410,7 @@ public class NumberField extends TextField {
      * Sets the value of the field, regardless whether the field is in read-only
      * mode.
      *
-     * @param newValue
-     *            The field's new Double value.
+     * @param newValue The field's new Double value.
      */
     public void setValueIgnoreReadOnly(Double newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -457,9 +446,8 @@ public class NumberField extends TextField {
     }
 
     /**
-     * @param text
-     *            The error text to display in case of an invalid field value.<br/>
-     *             Caution: If the argument is "" or <code>null</code>, the field
+     * @param text The error text to display in case of an invalid field value.<br/>
+     *             Caution: If the argument is "" or {@code null}, the field
      *             won't be recognizable as invalid!
      */
     public void setErrorText(String text) {
@@ -491,59 +479,63 @@ public class NumberField extends TextField {
      * See {@link DecimalFormat#getGroupingSize()}.
      */
     public int getGroupingSize() {
-        return groupingSize;
+        return getState(false).getGroupingSize();
     }
 
     /**
      * See {@link DecimalFormat#setGroupingSize(int)}.
      */
     public void setGroupingSize(int groupingSize) {
-        this.groupingSize = groupingSize;
-        updateFormattedValue();
+        getState().setGroupingSize(groupingSize);
     }
 
     /**
      * See {@link DecimalFormat#getMinimumFractionDigits()}.
      */
     public int getMinimumFractionDigits() {
-        return minimumFractionDigits;
+        return getState(false).getMinimumFractionDigits();
     }
 
     /**
      * See {@link DecimalFormat#setMinimumFractionDigits(int)}.
      */
     public void setMinimumFractionDigits(int minimumDigits) {
-        minimumFractionDigits = minimumDigits;
-        updateFormattedValue();
+        getState().setMinimumFractionDigits(minimumDigits);
+    }
+
+    public void setMaximumFractionDigits(int maximumDigits) {
+//        getState().setDecimalPrecision(maximumDigits);
+        getState().setMaximumFractionDigits(maximumDigits);
     }
 
     /**
      * See {@link DecimalFormat#isDecimalSeparatorAlwaysShown()}.
      */
     public boolean isDecimalSeparatorAlwaysShown() {
-        return decimalSeparatorAlwaysShown;
+        return getState(false).isDecimalSeparatorAlwaysShown();
     }
 
     /**
      * See {@link DecimalFormat#setDecimalSeparatorAlwaysShown(boolean)}.
      */
     public void setDecimalSeparatorAlwaysShown(boolean showAlways) {
-        decimalSeparatorAlwaysShown = showAlways;
-        updateFormattedValue();
+        getState().setDecimalSeparatorAlwaysShown(true);
     }
 
     /**
-     * See {@link NumberFieldState#getDecimalPrecision()}.
+     * See {@link NumberFieldState#getMaximumFractionDigits()} ()}.
      */
+    @Deprecated
     public int getDecimalPrecision() {
-        return getState(false).getDecimalPrecision();
+        return getState(false).getMaximumFractionDigits();
     }
 
     /**
-     * See {@link NumberFieldState#setDecimalPrecision(int)}.
+     * See {@link NumberFieldState#setMaximumFractionDigits(int)} (int)}.
      */
+    @Deprecated
     public void setDecimalPrecision(int maximumDigits) {
-        getState().setDecimalPrecision(maximumDigits);
+        setMaximumFractionDigits(maximumDigits);
     }
 
 
@@ -650,7 +642,7 @@ public class NumberField extends TextField {
      */
     public double getDoubleValueDoNotThrow() {
         try {
-            return Double.valueOf(getValueNonLocalized());
+            return getDecimalFormat().parse(getValue()).doubleValue();
         } catch (Exception e) {
             return 0.0;
         }

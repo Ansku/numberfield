@@ -17,16 +17,12 @@
 
 package org.vaadin.ui.client.numberfield;
 
-import org.vaadin.ui.shared.numberfield.Constants;
-import org.vaadin.ui.shared.numberfield.NumberFieldState;
-import org.vaadin.ui.shared.numberfield.NumberValidator;
-
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.vaadin.client.ui.VTextField;
+import org.vaadin.ui.shared.numberfield.Constants;
+import org.vaadin.ui.shared.numberfield.NumberFieldState;
+import org.vaadin.ui.shared.numberfield.NumberValidator;
 
 /**
  * This client-side widget represents a basic input field for numerical values
@@ -34,90 +30,47 @@ import com.vaadin.client.ui.VTextField;
  */
 public class VNumberField extends VTextField {
 
-    /** For internal use only. May be removed or replaced in the future. */
+    /**
+     * For internal use only. May be removed or replaced in the future.
+     */
     public NumberFieldState attributes = new NumberFieldState();
-
-    private KeyPressHandler keyPressHandler = new KeyPressHandler() {
-        /**
-         * Do keystroke filtering (e.g. no letters) and validation for integer
-         * (123) and decimal numbers (12.3) on keypress events.
-         */
-        @Override
-        public void onKeyPress(KeyPressEvent event) {
-            if (isReadOnly() || !isEnabled()) {
-                return;
-            }
-
-            int keyCode = event.getNativeEvent().getKeyCode();
-            if (isControlKey(keyCode)) {
-                return;
-            }
-
-            if (!isValueValid(event) || event.isAnyModifierKeyDown()) {
-                cancelKey();
-            }
-        }
-
-        private boolean isValueValid(KeyPressEvent event) {
-            // Bypass the check that value >= attributes.getMinValue() on a
-            // keypress
-            double savedMinValue = attributes.getMinValue();
-            attributes.setMinValue(Double.NEGATIVE_INFINITY);
-
-            String newText = getFieldValueAsItWouldBeAfterKeyPress(event
-                    .getCharCode());
-            boolean valueIsValid = attributes.isDecimalAllowed() ? NumberValidator
-                    .isValidDecimal(newText, attributes, true)
-                    : NumberValidator.isValidInteger(newText, attributes, true);
-
-            attributes.setMinValue(savedMinValue);
-
-            return valueIsValid;
-        }
-    };
 
     public VNumberField() {
         addStyleName(Constants.CSS_CLASSNAME);
-        addKeyPressHandler(keyPressHandler);
-        addKeyDownHandler(new KeyDownHandler() {
-
+        KeyPressHandler keyPressHandler = new KeyPressHandler() {
+            /**
+             * Do keystroke filtering (e.g. no letters) and validation for integer
+             * (123) and decimal numbers (12.3) on keypress events.
+             */
             @Override
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.getNativeKeyCode() == 110) {
-                    event.preventDefault();
-                    String value = getValue();
-                    int pos = getCursorPos();
-                    String newValue = value.substring(0, getCursorPos());
-                    newValue += attributes.getDecimalSeparator();
-                    if (value.length() > getCursorPos()) {
-                        newValue += value.substring(getCursorPos(),
-                                value.length());
-                    }
-                    setValue(newValue);
-                    setCursorPos(pos + 1);
+            public void onKeyPress(KeyPressEvent event) {
+                if (isReadOnly() || !isEnabled()) {
+                    return;
+                }
+                if (!isValueValid(event) || event.isAnyModifierKeyDown()) {
+                    cancelKey();
                 }
             }
-        });
 
-    }
+            private boolean isValueValid(KeyPressEvent event) {
+                // Bypass the check that value >= attributes.getMinValue() on a
+                // keypress
+                double savedMinValue = attributes.getMinValue();
+                attributes.setMinValue(Double.NEGATIVE_INFINITY);
 
-    private boolean isControlKey(int keyCode) {
-        switch (keyCode) {
-            case KeyCodes.KEY_LEFT:
-            case KeyCodes.KEY_RIGHT:
-            case KeyCodes.KEY_UP:
-            case KeyCodes.KEY_DOWN:
-            case KeyCodes.KEY_BACKSPACE:
-            case KeyCodes.KEY_DELETE:
-            case KeyCodes.KEY_TAB:
-            case KeyCodes.KEY_ENTER:
-            case KeyCodes.KEY_ESCAPE:
-            case KeyCodes.KEY_HOME:
-            case KeyCodes.KEY_END:
-                return true;
-        }
+                String newText = getFieldValueAsItWouldBeAfterKeyPress(event
+                        .getCharCode());
+                boolean valueIsValid = attributes.isDecimalAllowed() ? NumberValidator
+                        .isValidDecimal(newText, attributes, true)
+                        : NumberValidator.isValidInteger(newText, attributes, true);
 
-        return false;
+                attributes.setMinValue(savedMinValue);
+
+                return valueIsValid;
+            }
+        };
+
+        addKeyPressHandler(keyPressHandler);
     }
 
     private String getFieldValueAsItWouldBeAfterKeyPress(char charCode) {

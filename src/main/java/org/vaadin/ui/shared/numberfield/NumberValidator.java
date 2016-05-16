@@ -21,7 +21,7 @@ import org.vaadin.ui.client.numberfield.VNumberField;
 
 /**
  * <p>
- * <code>NumberValidator</code> provides static methods to ensure that a string
+ * {@code NumberValidator} provides static methods to ensure that a string
  * represents a valid number.
  * </p>
  * <p>
@@ -34,10 +34,8 @@ public abstract class NumberValidator {
     /**
      * Checks whether a string represents a valid decimal number.
      *
-     * @param toCheck
-     *            The string to check.
-     * @param attr
-     *            The validity is checked on the basis of the settings in the
+     * @param toCheck The string to check.
+     * @param attr    The validity is checked on the basis of the settings in the
      *                given {@link NumberFieldState} object.
      * @return True, if the given string represents a valid decimal number,
      * otherwise false.
@@ -50,8 +48,8 @@ public abstract class NumberValidator {
         // Produce a regular expression similar to this: [0-9\.]*,?[0-9\.]{0,2}
         String regExp = patternForNegatives(attr.isNegativeAllowed()) + "[0-9"
                 + groupingSeparator + "]*" + attr.getEscapedDecimalSeparator()
-                + "?[0-9" + groupingSeparator + "]{0,"
-                + attr.getDecimalPrecision() + "}";
+                + "?[0-9]{" + attr.getMinimumFractionDigits() + ","
+                + attr.getMaximumFractionDigits() + "}";
 
         return isWithinBoundsAndMatchesRegExp(toCheck, regExp, attr,
                 isFormatted);
@@ -60,10 +58,8 @@ public abstract class NumberValidator {
     /**
      * Checks whether a string represents a valid integer number.
      *
-     * @param toCheck
-     *            The string to check.
-     * @param attr
-     *            The validity is checked on the basis of the settings in the
+     * @param toCheck The string to check.
+     * @param attr    The validity is checked on the basis of the settings in the
      *                given {@link NumberFieldState} object.
      * @return True, if the given string represents a valid integer number,
      * otherwise false.
@@ -92,6 +88,8 @@ public abstract class NumberValidator {
             toCheck = Constants.NEGATIVE_PREFIX + "0";
         }
 
+        boolean valueMatchesRegExp = toCheck.matches(regExp);
+
         // 2.546,99 -> 2546.99
         String toCheckNonLocalized = toCheck;
         if (isFormatted) {
@@ -110,12 +108,9 @@ public abstract class NumberValidator {
 
         boolean valueIsWithinBounds = value >= attr.getMinValue()
                 && value <= attr.getMaxValue();
-        boolean valueMatchesRegExp = toCheck.matches(regExp);
-        if (!valueIsWithinBounds || !valueMatchesRegExp) {
-            return false;
-        }
 
-        return true;
+        return !(!valueIsWithinBounds || !valueMatchesRegExp);
+
     }
 
 }

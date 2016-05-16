@@ -20,7 +20,7 @@ package org.vaadin.ui.shared.numberfield;
 import com.vaadin.shared.ui.textfield.AbstractTextFieldState;
 
 /**
- * Data holder class for the properties of a <code>NumberField</code> instance.
+ * Data holder class for the properties of a {@code NumberField} instance.
  */
 @SuppressWarnings("serial")
 public class NumberFieldState extends AbstractTextFieldState {
@@ -31,9 +31,13 @@ public class NumberFieldState extends AbstractTextFieldState {
     private double minValue = Double.NEGATIVE_INFINITY;
     private double maxValue = Double.POSITIVE_INFINITY;
 
-    private int decimalPrecision;
     private char decimalSeparator;
     private char groupingSeparator;
+    private boolean decimalSeparatorAlwaysShown;
+    private int minimumFractionDigits;
+    private int maximumFractionDigits;
+    private int groupingSize;
+
 
     public String formattedValue;
 
@@ -83,23 +87,23 @@ public class NumberFieldState extends AbstractTextFieldState {
         return useGrouping;
     }
 
-    /**
-     * @return The maximum precision to display after the decimal separator.
-     */
-    public int getDecimalPrecision() {
-        return decimalPrecision;
-    }
-
-    /**
-     * @param decimalPrecision
-     *            The maximum precision to display after the decimal separator
-     *            (must be in [1,16]).
-     */
-    public void setDecimalPrecision(int decimalPrecision) {
-        if (decimalPrecision >= 1 && decimalPrecision <= 16) {
-            this.decimalPrecision = decimalPrecision;
-        }
-    }
+//    /**
+//     * @return The maximum precision to display after the decimal separator.
+//     */
+//    public int getDecimalPrecision() {
+//        return decimalPrecision;
+//    }
+//
+//    /**
+//     * @param decimalPrecision
+//     *            The maximum precision to display after the decimal separator
+//     *            (must be in [1,16]).
+//     */
+//    public void setDecimalPrecision(int decimalPrecision) {
+//        if (decimalPrecision >= 1 && decimalPrecision <= 16) {
+//            this.decimalPrecision = decimalPrecision;
+//        }
+//    }
 
     /**
      * @return The decimal separator (e.g. ',').
@@ -192,4 +196,35 @@ public class NumberFieldState extends AbstractTextFieldState {
         this.maxValue = maxValue;
     }
 
+    public boolean isDecimalSeparatorAlwaysShown() {
+        return decimalSeparatorAlwaysShown;
+    }
+
+    public void setDecimalSeparatorAlwaysShown(boolean decimalSeparatorAlwaysShown) {
+        this.decimalSeparatorAlwaysShown = decimalSeparatorAlwaysShown;
+    }
+
+    public int getMinimumFractionDigits() {
+        return minimumFractionDigits;
+    }
+
+    public void setMinimumFractionDigits(int minimumFractionDigits) {
+        this.minimumFractionDigits = minimumFractionDigits;
+    }
+
+    public int getMaximumFractionDigits() {
+        return maximumFractionDigits;
+    }
+
+    public void setMaximumFractionDigits(int maximumFractionDigits) {
+        this.maximumFractionDigits = maximumFractionDigits;
+    }
+
+    public int getGroupingSize() {
+        return groupingSize;
+    }
+
+    public void setGroupingSize(int groupingSize) {
+        this.groupingSize = groupingSize;
+    }
 }

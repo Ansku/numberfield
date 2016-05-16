@@ -19,11 +19,9 @@ package org.vaadin.ui.shared.numberfield;
 
 public interface Constants {
 
-    static final String CSS_CLASSNAME = "numberfield";
-    static final String CSS_CLASSNAME_ON_ERROR = "numberfield-error";
-
-    static final String ATTRIBUTE_SERVER_FORMATTED_VALUE = "formattedValue";
-
-    static final String NEGATIVE_PREFIX = "-";
+    String CSS_CLASSNAME = "numberfield";
+    String CSS_CLASSNAME_ON_ERROR = "numberfield-error";
+    String ATTRIBUTE_SERVER_FORMATTED_VALUE = "formattedValue";
+    String NEGATIVE_PREFIX = "-";
 
 }
