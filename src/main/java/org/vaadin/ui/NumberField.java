@@ -210,14 +210,14 @@ public class NumberField extends TextField {
 
             @Override
             public Double convertToModel(String value,
-                    Class<? extends Double> targetType, Locale locale)
+                                         Class<? extends Double> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
                 return super.convertToModel(value, targetType, Locale.US);
             }
 
             @Override
             public String convertToPresentation(Double value,
-                    Class<? extends String> targetType, Locale locale)
+                                                Class<? extends String> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
                 String result = super.convertToPresentation(value, targetType,
                         Locale.US);
@@ -320,12 +320,12 @@ public class NumberField extends TextField {
             try {
                 synchronized (decimalFormat) {
                     setDecimalFormatToNumberFieldAttributes();
-                    if (newValue != null && newValue.trim().equals("")) {
-                        variables.put("text", null);
-                    } else {
-                        Number valueAsNumber = decimalFormat.parse(newValue);
+                if (newValue != null && newValue.trim().equals("")) {
+                    variables.put("text", null);
+                } else {
+                    Number valueAsNumber = decimalFormat.parse(newValue);
                         variables.put("text", valueAsNumber.toString());
-                    }
+                }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -348,7 +348,7 @@ public class NumberField extends TextField {
                     .getDecimalFormatSymbols();
             symbols.setDecimalSeparator(getState().getDecimalSeparator());
             symbols.setGroupingSeparator(getState().getGroupingSeparator());
-            decimalFormat.setDecimalFormatSymbols(symbols);
+        decimalFormat.setDecimalFormatSymbols(symbols);
         }
     }
 
@@ -459,8 +459,8 @@ public class NumberField extends TextField {
     /**
      * @param text
      *            The error text to display in case of an invalid field value.<br/>
-     *            Caution: If the argument is "" or <code>null</code>, the field
-     *            won't be recognizable as invalid!
+     *             Caution: If the argument is "" or <code>null</code>, the field
+     *             won't be recognizable as invalid!
      */
     public void setErrorText(String text) {
         errorText = text;
@@ -545,6 +545,7 @@ public class NumberField extends TextField {
     public void setDecimalPrecision(int maximumDigits) {
         getState().setDecimalPrecision(maximumDigits);
     }
+
 
     /**
      * See {@link NumberFieldState#getDecimalSeparator()}.
@@ -645,7 +646,7 @@ public class NumberField extends TextField {
 
     /**
      * @return The field's value as a double value. If the field contains no
-     *         parsable number, 0.0 is returned.
+     * parsable number, 0.0 is returned.
      */
     public double getDoubleValueDoNotThrow() {
         try {
@@ -657,9 +658,9 @@ public class NumberField extends TextField {
 
     /**
      * @return The field's value as a string representation of a decimal number
-     *         with '.' as decimal separator and cutted grouping separators.
-     *         Example: If the field's value is "2.546,99", this method will
-     *         return "2546.99". If the field is empty, "0" is returned.
+     * with '.' as decimal separator and cutted grouping separators.
+     * Example: If the field's value is "2.546,99", this method will
+     * return "2546.99". If the field is empty, "0" is returned.
      */
     public String getValueNonLocalized() {
         String value = getValue();
