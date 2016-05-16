@@ -65,21 +65,25 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
             <version>9.2.6.v20141205</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
             <version>9.2.6.v20141205</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
             <version>9.2.6.v20141205</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.vaadin</groupId>
             <artifactId>addon-test-helpers</artifactId>
             <version>1.7</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -141,15 +145,7 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <!-- if you don't specify any modules, the plugin will find them -->
-
-                            <!--
-                            <modules>
-                                <module>se.infogile.ui.widgetset.InfogileWidgetset</module>
-                            </modules>
-                            -->
-
-                            <extraJvmArgs>-Xmx2048M -Xss1024k</extraJvmArgs>
+                            <extraJvmArgs>-Xmx1024M -Xss1024k</extraJvmArgs>
                             <webappDirectory>
                                 ${project.basedir}/target/testwebapp/VAADIN/widgetsets
                             </webappDirectory>
@@ -211,19 +207,19 @@
                 </configuration>
             </plugin>
 
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-            <!--<version>2.9</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>attach-javadoc</id>-->
-            <!--<goals>-->
-            <!--<goal>jar</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

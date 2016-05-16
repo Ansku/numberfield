@@ -49,16 +49,14 @@ public class NumberFieldState extends AbstractTextFieldState {
     }
 
     /**
-     * @param negativeAllowed
-     *            False to prevent negative numbers (defaults to true).
+     * @param negativeAllowed False to prevent negative numbers (defaults to true).
      */
     public void setNegativeAllowed(boolean negativeAllowed) {
         negativesAllowed = negativeAllowed;
     }
 
     /**
-     * @param decimalAllowed
-     *            Sets whether decimal values are allowed (defaults to true).
+     * @param decimalAllowed Sets whether decimal values are allowed (defaults to true).
      */
     public void setDecimalAllowed(boolean decimalAllowed) {
         decimalsAllowed = decimalAllowed;
@@ -72,16 +70,14 @@ public class NumberFieldState extends AbstractTextFieldState {
     }
 
     /**
-     * @param useGrouping
-     *            True to use grouping (e.g. 12345 -> 12.345).
-     *
+     * @param useGrouping True to use grouping (e.g. 12345 -&gt; 12.345).
      */
     public void setGroupingUsed(boolean useGrouping) {
         this.useGrouping = useGrouping;
     }
 
     /**
-     * @return True, if grouping is used (e.g. 12345 -> 12.345).
+     * @return True, if grouping is used (e.g. 12345 -&gt; 12.345).
      */
     public boolean isGroupingUsed() {
         return useGrouping;
@@ -114,7 +110,7 @@ public class NumberFieldState extends AbstractTextFieldState {
 
     /**
      * @return The decimal separator (quoted, if it is a regular expression
-     *         character, e.g. "\.").
+     * character, e.g. "\.").
      */
     public String getEscapedDecimalSeparator() {
         return escapeMetacharactersFromRegExp(String.valueOf(decimalSeparator));
@@ -124,8 +120,7 @@ public class NumberFieldState extends AbstractTextFieldState {
      * Quotes regular expression characters. The special regular expression
      * characters are: /.+*?^$|\\()[]{}
      *
-     * @param toQuote
-     *            The input string.
+     * @param toQuote The input string.
      * @return The quoted string.
      */
     private String escapeMetacharactersFromRegExp(String toQuote) {
@@ -134,8 +129,7 @@ public class NumberFieldState extends AbstractTextFieldState {
     }
 
     /**
-     * @param decimalSeparator
-     *            The decimal separator.
+     * @param decimalSeparator The decimal separator.
      */
     public void setDecimalSeparator(char decimalSeparator) {
         this.decimalSeparator = decimalSeparator;
@@ -150,15 +144,14 @@ public class NumberFieldState extends AbstractTextFieldState {
 
     /**
      * @return The grouping (thousands) separator (quoted, if it is a regular
-     *         expression character, e.g. "\.").
+     * expression character, e.g. "\.").
      */
     public String getEscapedGroupingSeparator() {
         return escapeMetacharactersFromRegExp(String.valueOf(groupingSeparator));
     }
 
     /**
-     * @param groupingSeparator
-     *            The grouping (thousands) separator.
+     * @param groupingSeparator The grouping (thousands) separator.
      */
     public void setGroupingSeparator(char groupingSeparator) {
         this.groupingSeparator = groupingSeparator;
@@ -172,9 +165,8 @@ public class NumberFieldState extends AbstractTextFieldState {
     }
 
     /**
-     * @param minValue
-     *            The minimum allowed value (defaults to
-     *            {@link Double#NEGATIVE_INFINITY}).
+     * @param minValue The minimum allowed value (defaults to
+     *                 {@link Double#NEGATIVE_INFINITY}).
      */
     public void setMinValue(double minValue) {
         this.minValue = minValue;
@@ -188,9 +180,8 @@ public class NumberFieldState extends AbstractTextFieldState {
     }
 
     /**
-     * @param maxValue
-     *            The maximum allowed value (defaults to
-     *            {@link Double#POSITIVE_INFINITY}).
+     * @param maxValue The maximum allowed value (defaults to
+     *                 {@link Double#POSITIVE_INFINITY}).
      */
     public void setMaxValue(double maxValue) {
         this.maxValue = maxValue;

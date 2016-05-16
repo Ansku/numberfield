@@ -42,12 +42,18 @@ public class VNumberField extends VTextField {
              * Do keystroke filtering (e.g. no letters) and validation for integer
              * (123) and decimal numbers (12.3) on keypress events.
              */
+
             @Override
             public void onKeyPress(KeyPressEvent event) {
+                tryFixValue();
+                if (onlyJumpingDecimalChar(event.getCharCode())) {
+                    cancelKey();
+                }
                 if (isReadOnly() || !isEnabled()) {
                     return;
                 }
-                if (!isValueValid(event) || event.isAnyModifierKeyDown()) {
+                boolean validValue = isValueValid(event);
+                if (!validValue || event.isAnyModifierKeyDown()) {
                     cancelKey();
                 }
             }
@@ -71,6 +77,36 @@ public class VNumberField extends VTextField {
         };
 
         addKeyPressHandler(keyPressHandler);
+    }
+
+    private boolean onlyJumpingDecimalChar(char charCode) {
+        String text = getText();
+        if (!text.isEmpty()) {
+            int cursorPosition = getCursorPos();
+            String nextChar = text.substring(cursorPosition, cursorPosition + 1);
+            if (String.valueOf(charCode).equals(nextChar)) {
+                setCursorPos(cursorPosition + 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A method which attempts to fix any incompatible values.
+     * First (and currently only) example is the requirements of fraction
+     * digits without having a value, which adds the correct number of fraction
+     * digits and positions the cursor to the integer part.
+     */
+    private void tryFixValue() {
+        if (getText().isEmpty() && attributes.getMinimumFractionDigits() > 0) {
+            String decimals = "";
+            for (int i = 0; i < attributes.getMinimumFractionDigits(); i++) {
+                decimals += "0";
+            }
+            setText(attributes.getDecimalSeparator() + decimals);
+            setCursorPos(0);
+        }
     }
 
     private String getFieldValueAsItWouldBeAfterKeyPress(char charCode) {

@@ -1,8 +1,6 @@
 package org.vaadin.numberfield;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.*;
 import org.vaadin.addonhelpers.AbstractTest;
 import org.vaadin.ui.NumberField;
 
@@ -27,7 +25,7 @@ public class NumberFieldTest extends AbstractTest {
     }
 
     private void updateField() {
-        numberField.setValue(start);
+        numberField.setValue(numberField.getDoubleValueDoNotThrow());
         panel.setContent(numberField);
         numberField.validate();
     }
@@ -36,17 +34,25 @@ public class NumberFieldTest extends AbstractTest {
     protected void setup() {
         super.setup();
 
-        TextField groupingChar = new TextField("Grouping char");
-        groupingChar.setValue(" ");
-        TextField decimalChar = new TextField("Decimal char");
-        decimalChar.setValue(",");
-        NumberField maxFractionDigits = new NumberField("Decimal char");
-        maxFractionDigits.setValue(4d);
-        
+        CssLayout settingsLayout = new CssLayout();
+        TextField groupingChar = new TextField("Grouping separator char");
+        groupingChar.setValue(String.valueOf(numberField.getGroupingSeparator()));
+        TextField decimalChar = new TextField("Decimal separator char");
+        decimalChar.setValue(String.valueOf(numberField.getDecimalSeparator()));
+        NumberField maxFractionDigits = new NumberField("Max # of fraction digits");
+        maxFractionDigits.setValue((double) numberField.getMaximumFractionDigits());
+        NumberField minFractionDigits = new NumberField("Min # of decimal digits");
+        minFractionDigits.setValue((double) numberField.getMinimumFractionDigits());
+        CheckBox allowDecimals = new CheckBox("Allow decimals");
+        allowDecimals.setValue(numberField.isDecimalAllowed());
+
+        CheckBox decimalCharAlwaysShown = new CheckBox("Decimal char always shown");
+        decimalCharAlwaysShown.setValue(numberField.isDecimalSeparatorAlwaysShown());
+
         numberField.setGroupingSeparator(' ');
         numberField.setDecimalSeparator(',');
 
-        content.addComponentAsFirst(groupingChar);
+        settingsLayout.addComponent(groupingChar);
         groupingChar.addValueChangeListener(e -> {
             if (!groupingChar.getValue().isEmpty()) {
                 numberField.setGroupingSeparator(groupingChar.getValue().charAt(0));
@@ -54,7 +60,7 @@ public class NumberFieldTest extends AbstractTest {
             }
         });
 
-        content.addComponentAsFirst(decimalChar);
+        settingsLayout.addComponent(decimalChar);
         decimalChar.addValueChangeListener(e -> {
             if (!decimalChar.getValue().isEmpty()) {
                 numberField.setDecimalSeparator(decimalChar.getValue().charAt(0));
@@ -62,13 +68,33 @@ public class NumberFieldTest extends AbstractTest {
             }
         });
 
-        content.addComponentAsFirst(maxFractionDigits);
+        settingsLayout.addComponent(maxFractionDigits);
         maxFractionDigits.addValueChangeListener(e -> {
             if (!maxFractionDigits.getValue().isEmpty()) {
                 numberField.setMaximumFractionDigits(((Double) maxFractionDigits.getDoubleValueDoNotThrow()).intValue());
                 updateField();
             }
         });
+
+        settingsLayout.addComponent(minFractionDigits);
+        minFractionDigits.addValueChangeListener(e -> {
+            if (!minFractionDigits.getValue().isEmpty()) {
+                numberField.setMinimumFractionDigits(((Double) minFractionDigits.getDoubleValueDoNotThrow()).intValue());
+                updateField();
+            }
+        });
+
+        settingsLayout.addComponent(allowDecimals);
+        allowDecimals.addValueChangeListener(e -> {
+            numberField.setDecimalAllowed(allowDecimals.getValue());
+        });
+
+        settingsLayout.addComponent(decimalCharAlwaysShown);
+        decimalCharAlwaysShown.addValueChangeListener(e -> {
+            numberField.setDecimalSeparatorAlwaysShown(decimalCharAlwaysShown.getValue());
+        });
+
+        content.addComponentAsFirst(settingsLayout);
         updateField();
 
     }

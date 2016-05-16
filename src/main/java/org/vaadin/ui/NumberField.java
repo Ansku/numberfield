@@ -57,13 +57,12 @@ import java.util.Map;
  * setters to define the format, see the code example below for a general view.
  * </p>
  * <p>
- * Some features in an usage example: <blockquote>
- * <p>
+ * Some features in an usage example:
  * <pre>
+ * {@code
  * NumberField numField = new NumberField(); // NumberField extends TextField
- * numField.setDecimalAllowed(true); // not just integers (by default, decimals are
- * // allowed)
- * numField.setDecimalPrecision(2); // maximum 2 digits after the decimal separator
+ * numField.setDecimalAllowed(true); // not just integers (by default, decimals are allowed)
+ * numField.setMaximumFractionDigits(2); // maximum 2 digits after the decimal separator
  * numField.setDecimalSeparator(','); // e.g. 1,5
  * numField.setDecimalSeparatorAlwaysShown(true); // e.g. 12345 -&gt; 12345,
  * numField.setMinimumFractionDigits(2); // e.g. 123,4 -&gt; 123,40
@@ -72,17 +71,12 @@ import java.util.Map;
  * numField.setGroupingSize(3); // 3 digits between grouping separators: 12.345.678
  * numField.setMinValue(0); // valid values must be &gt;= 0 ...
  * numField.setMaxValue(999.9); // ... and &lt;= 999.9
- * numField.setErrorText(&quot;Invalid number format!&quot;); // feedback message on bad
- * // input
- * numField.setNegativeAllowed(false); // prevent negative numbers (defaults to
- * // true)
- * numField.setValueIgnoreReadOnly(&quot;10&quot;); // set the field's value, regardless
- * // whether it is read-only or not
+ * numField.setErrorText(&quot;Invalid number format!&quot;); // feedback message on bad input
+ * numField.setNegativeAllowed(false); // prevent negative numbers (defaults to true)
+ * numField.setValueIgnoreReadOnly(&quot;10&quot;); // set the field's value, regardless whether it is read-only or not
  * numField.removeValidator(); // omit server-side validation
+ * }
  * </pre>
- * <p>
- * </blockquote>
- * </p>
  */
 @StyleSheet("numberfield.css")
 @SuppressWarnings("serial")
@@ -109,7 +103,7 @@ public class NumberField extends TextField {
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
-     * decimal/grouping separator. Grouping (e.g. 12345 -> 12.345) is enabled,
+     * decimal/grouping separator. Grouping (e.g. 12345 -&gt; 12.345) is enabled,
      * the maximum precision to display after the decimal separator is set to 2
      * per default.
      * </p>
@@ -137,7 +131,7 @@ public class NumberField extends TextField {
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
-     * decimal/grouping separator. Grouping (e.g. 12345 -> 12.345) is enabled,
+     * decimal/grouping separator. Grouping (e.g. 12345 -&gt; 12.345) is enabled,
      * the maximum precision to display after the decimal separator is set to 2
      * per default.
      * </p>
@@ -338,11 +332,12 @@ public class NumberField extends TextField {
         decimalFormat.setGroupingSize(getState(false).getGroupingSize());
         decimalFormat.setMinimumFractionDigits(getState(false).getMinimumFractionDigits());
         decimalFormat.setDecimalSeparatorAlwaysShown(getState(false).isDecimalSeparatorAlwaysShown());
-        decimalFormat.setMaximumFractionDigits(getState(false).getMaximumFractionDigits());
+        decimalFormat.setMaximumFractionDigits(getState(false).isDecimalAllowed() ? getState(false).getMaximumFractionDigits() : 0);
         DecimalFormatSymbols symbols = decimalFormat.getDecimalFormatSymbols();
         symbols.setDecimalSeparator(getState(false).getDecimalSeparator());
         symbols.setGroupingSeparator(getState(false).getGroupingSeparator());
         decimalFormat.setDecimalFormatSymbols(symbols);
+
         return decimalFormat;
     }
 
@@ -429,7 +424,9 @@ public class NumberField extends TextField {
      * As a side-effect, the minimum number of digits allowed in the fraction
      * portion of a number is set to 0 if decimalAllowed is false (so that
      * {@link DecimalFormat} does the right thing).
-     * </p>
+     *
+     * @param decimalAllowed Set whether decimals are allowed or not
+     *                       </p>
      */
     public void setDecimalAllowed(boolean decimalAllowed) {
         getState().setDecimalAllowed(decimalAllowed);
@@ -440,13 +437,15 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#isDecimalAllowed()}.
+     *
+     * @return True if decimals are allowed
      */
     public boolean isDecimalAllowed() {
         return getState(false).isDecimalAllowed();
     }
 
     /**
-     * @param text The error text to display in case of an invalid field value.<br/>
+     * @param text The error text to display in case of an invalid field value.
      *             Caution: If the argument is "" or {@code null}, the field
      *             won't be recognizable as invalid!
      */
@@ -463,6 +462,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#isGroupingUsed()}.
+     *
+     * @return True if grouping if integer digits are used.
      */
     public boolean isGroupingUsed() {
         return getState(false).isGroupingUsed();
@@ -470,6 +471,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#setGroupingUsed(boolean)}.
+     *
+     * @param group set to true to group integer part of value.
      */
     public void setGroupingUsed(boolean group) {
         getState().setGroupingUsed(group);
@@ -477,6 +480,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link DecimalFormat#getGroupingSize()}.
+     *
+     * @return The grouping size
      */
     public int getGroupingSize() {
         return getState(false).getGroupingSize();
@@ -484,6 +489,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link DecimalFormat#setGroupingSize(int)}.
+     *
+     * @param groupingSize Set the grouping size. {@link #setGroupingUsed(boolean)} must also be set to true.
      */
     public void setGroupingSize(int groupingSize) {
         getState().setGroupingSize(groupingSize);
@@ -491,6 +498,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link DecimalFormat#getMinimumFractionDigits()}.
+     *
+     * @return {@link DecimalFormat#getMinimumFractionDigits()}
      */
     public int getMinimumFractionDigits() {
         return getState(false).getMinimumFractionDigits();
@@ -498,18 +507,30 @@ public class NumberField extends TextField {
 
     /**
      * See {@link DecimalFormat#setMinimumFractionDigits(int)}.
+     *
+     * @param minimumDigits The minimum number of fraction digits.
      */
     public void setMinimumFractionDigits(int minimumDigits) {
         getState().setMinimumFractionDigits(minimumDigits);
     }
 
+    /**
+     * Gets the maximum fraction digits setting.
+     *
+     * @return The maximum number of fraction digits allowed.
+     */
+    public int getMaximumFractionDigits() {
+        return getState().getMaximumFractionDigits();
+    }
+
     public void setMaximumFractionDigits(int maximumDigits) {
-//        getState().setDecimalPrecision(maximumDigits);
         getState().setMaximumFractionDigits(maximumDigits);
     }
 
     /**
      * See {@link DecimalFormat#isDecimalSeparatorAlwaysShown()}.
+     *
+     * @return True if decimal separator should always show.
      */
     public boolean isDecimalSeparatorAlwaysShown() {
         return getState(false).isDecimalSeparatorAlwaysShown();
@@ -517,13 +538,17 @@ public class NumberField extends TextField {
 
     /**
      * See {@link DecimalFormat#setDecimalSeparatorAlwaysShown(boolean)}.
+     *
+     * @param showAlways Set to true if decimal separator always should be shown.
      */
     public void setDecimalSeparatorAlwaysShown(boolean showAlways) {
-        getState().setDecimalSeparatorAlwaysShown(true);
+        getState().setDecimalSeparatorAlwaysShown(showAlways);
     }
 
     /**
      * See {@link NumberFieldState#getMaximumFractionDigits()} ()}.
+     *
+     * @return The maximum fraction digits.
      */
     @Deprecated
     public int getDecimalPrecision() {
@@ -532,6 +557,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#setMaximumFractionDigits(int)} (int)}.
+     *
+     * @param maximumDigits The number of fraction digits.
      */
     @Deprecated
     public void setDecimalPrecision(int maximumDigits) {
@@ -541,6 +568,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getDecimalSeparator()}.
+     *
+     * @return The decimal separator
      */
     public char getDecimalSeparator() {
         return getState(false).getDecimalSeparator();
@@ -548,6 +577,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getEscapedDecimalSeparator()}.
+     *
+     * @return The escaped decimal separator
      */
     public String getEscapedDecimalSeparator() {
         return getState(false).getEscapedDecimalSeparator();
@@ -556,6 +587,8 @@ public class NumberField extends TextField {
     /**
      * Sets the decimal separator. If the field has a value containing the old
      * decimal separator, it is replaced with the new one.
+     *
+     * @param newSeparator The decimal separator to use
      */
     public void setDecimalSeparator(char newSeparator) {
         replaceSeparatorInField(getDecimalSeparator(), newSeparator);
@@ -573,6 +606,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getGroupingSeparator()}.
+     *
+     * @return The grouping character
      */
     public char getGroupingSeparator() {
         return getState(false).getGroupingSeparator();
@@ -580,6 +615,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getEscapedGroupingSeparator()}.
+     *
+     * @return Escaped grouping separator character
      */
     public String getEscapedGroupingSeparator() {
         return getState(false).getEscapedGroupingSeparator();
@@ -588,6 +625,8 @@ public class NumberField extends TextField {
     /**
      * Sets the grouping separator. If the field has a value containing the old
      * grouping separator, it is replaced with the new one.
+     *
+     * @param newSeparator The new grouping separator
      */
     public void setGroupingSeparator(char newSeparator) {
         replaceSeparatorInField(getGroupingSeparator(), newSeparator);
@@ -596,6 +635,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getMinValue()}.
+     *
+     * @return The minimum value allowed
      */
     public double getMinValue() {
         return getState(false).getMinValue();
@@ -603,6 +644,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#setMinValue(double)}.
+     *
+     * @param minValue Sets the minimum value allowed
      */
     public void setMinValue(double minValue) {
         getState().setMinValue(minValue);
@@ -610,6 +653,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#getMaxValue()}.
+     *
+     * @return The maximum value allowed
      */
     public double getMaxValue() {
         return getState(false).getMaxValue();
@@ -617,6 +662,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#setMaxValue(double)}.
+     *
+     * @param maxValue Set the maximum value allowed
      */
     public void setMaxValue(double maxValue) {
         getState().setMaxValue(maxValue);
@@ -624,6 +671,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#isNegativeAllowed()}.
+     *
+     * @return True if negated numbers are allowed.
      */
     public boolean isNegativeAllowed() {
         return getState(false).isNegativeAllowed();
@@ -631,6 +680,8 @@ public class NumberField extends TextField {
 
     /**
      * See {@link NumberFieldState#setNegativeAllowed(boolean)}.
+     *
+     * @param negativeAllowed Set if negated are allowed or not.
      */
     public void setNegativeAllowed(boolean negativeAllowed) {
         getState().setNegativeAllowed(negativeAllowed);
@@ -669,11 +720,18 @@ public class NumberField extends TextField {
      * '.' as decimal separator (e.g. 12345.67), this method will return the
      * value with replaced decimal seperator as it was set with
      * {@link #setDecimalSeparator(char)}.
+     *
+     * @param value the value in which a dot ('.') is replaced with the current decimal separator
+     * @return the value with dot ('.') replaced with the current decimal separator.
      */
+    @Deprecated
     public String replacePointWithDecimalSeparator(String value) {
         return value.replace('.', getDecimalSeparator());
     }
 
+    /**
+     * @return The value formatted as a decimal number according to decimal format settings.
+     */
     public String getFormattedValue() {
         return getValueAsFormattedDecimalNumber();
     }
