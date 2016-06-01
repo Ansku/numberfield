@@ -147,7 +147,7 @@ public class NumberField extends TextField {
      * </p>
      *
      * @param caption
-     *            Sets the component's caption {@code String}.
+     *         Sets the component's caption {@code String}.
      */
     public NumberField(String caption) {
         this();
@@ -383,7 +383,7 @@ public class NumberField extends TextField {
 
     /**
      * @param newValue
-     *            Sets the value of the field to a double.
+     *         Sets the value of the field to a double.
      */
     public void setValue(Double newValue) throws ReadOnlyException,
             ConversionException {
@@ -403,7 +403,7 @@ public class NumberField extends TextField {
      * mode.
      *
      * @param newValue
-     *            The field's new String value.
+     *         The field's new String value.
      */
     public void setValueIgnoreReadOnly(String newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -421,7 +421,7 @@ public class NumberField extends TextField {
      * mode.
      *
      * @param newValue
-     *            The field's new Double value.
+     *         The field's new Double value.
      */
     public void setValueIgnoreReadOnly(Double newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -458,9 +458,9 @@ public class NumberField extends TextField {
 
     /**
      * @param text
-     *            The error text to display in case of an invalid field value.<br/>
-     *            Caution: If the argument is "" or <code>null</code>, the field
-     *            won't be recognizable as invalid!
+     *         The error text to display in case of an invalid field value.<br/>
+     *         Caution: If the argument is "" or <code>null</code>, the field
+     *         won't be recognizable as invalid!
      */
     public void setErrorText(String text) {
         errorText = text;
@@ -645,7 +645,7 @@ public class NumberField extends TextField {
 
     /**
      * @return The field's value as a double value. If the field contains no
-     *         parsable number, 0.0 is returned.
+     * parsable number, 0.0 is returned.
      */
     public double getDoubleValueDoNotThrow() {
         try {
@@ -657,9 +657,9 @@ public class NumberField extends TextField {
 
     /**
      * @return The field's value as a string representation of a decimal number
-     *         with '.' as decimal separator and cutted grouping separators.
-     *         Example: If the field's value is "2.546,99", this method will
-     *         return "2546.99". If the field is empty, "0" is returned.
+     * with '.' as decimal separator and cutted grouping separators.
+     * Example: If the field's value is "2.546,99", this method will
+     * return "2546.99". If the field is empty, "0" is returned.
      */
     public String getValueNonLocalized() {
         String value = getValue();
