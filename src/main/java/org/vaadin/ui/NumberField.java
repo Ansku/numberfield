@@ -147,7 +147,7 @@ public class NumberField extends TextField {
      * </p>
      *
      * @param caption
-     *            Sets the component's caption {@code String}.
+     *         Sets the component's caption {@code String}.
      */
     public NumberField(String caption) {
         this();
@@ -210,14 +210,14 @@ public class NumberField extends TextField {
 
             @Override
             public Double convertToModel(String value,
-                                         Class<? extends Double> targetType, Locale locale)
+                    Class<? extends Double> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
                 return super.convertToModel(value, targetType, Locale.US);
             }
 
             @Override
             public String convertToPresentation(Double value,
-                                                Class<? extends String> targetType, Locale locale)
+                    Class<? extends String> targetType, Locale locale)
                     throws com.vaadin.data.util.converter.Converter.ConversionException {
                 String result = super.convertToPresentation(value, targetType,
                         Locale.US);
@@ -320,12 +320,12 @@ public class NumberField extends TextField {
             try {
                 synchronized (decimalFormat) {
                     setDecimalFormatToNumberFieldAttributes();
-                if (newValue != null && newValue.trim().equals("")) {
-                    variables.put("text", null);
-                } else {
-                    Number valueAsNumber = decimalFormat.parse(newValue);
+                    if (newValue != null && newValue.trim().equals("")) {
+                        variables.put("text", null);
+                    } else {
+                        Number valueAsNumber = decimalFormat.parse(newValue);
                         variables.put("text", valueAsNumber.toString());
-                }
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -348,7 +348,7 @@ public class NumberField extends TextField {
                     .getDecimalFormatSymbols();
             symbols.setDecimalSeparator(getState().getDecimalSeparator());
             symbols.setGroupingSeparator(getState().getGroupingSeparator());
-        decimalFormat.setDecimalFormatSymbols(symbols);
+            decimalFormat.setDecimalFormatSymbols(symbols);
         }
     }
 
@@ -383,7 +383,7 @@ public class NumberField extends TextField {
 
     /**
      * @param newValue
-     *            Sets the value of the field to a double.
+     *         Sets the value of the field to a double.
      */
     public void setValue(Double newValue) throws ReadOnlyException,
             ConversionException {
@@ -403,7 +403,7 @@ public class NumberField extends TextField {
      * mode.
      *
      * @param newValue
-     *            The field's new String value.
+     *         The field's new String value.
      */
     public void setValueIgnoreReadOnly(String newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -421,7 +421,7 @@ public class NumberField extends TextField {
      * mode.
      *
      * @param newValue
-     *            The field's new Double value.
+     *         The field's new Double value.
      */
     public void setValueIgnoreReadOnly(Double newValue) {
         boolean wasReadOnly = isReadOnly();
@@ -458,9 +458,9 @@ public class NumberField extends TextField {
 
     /**
      * @param text
-     *            The error text to display in case of an invalid field value.<br/>
-     *             Caution: If the argument is "" or <code>null</code>, the field
-     *             won't be recognizable as invalid!
+     *         The error text to display in case of an invalid field value.<br/>
+     *         Caution: If the argument is "" or <code>null</code>, the field
+     *         won't be recognizable as invalid!
      */
     public void setErrorText(String text) {
         errorText = text;
@@ -545,7 +545,6 @@ public class NumberField extends TextField {
     public void setDecimalPrecision(int maximumDigits) {
         getState().setDecimalPrecision(maximumDigits);
     }
-
 
     /**
      * See {@link NumberFieldState#getDecimalSeparator()}.

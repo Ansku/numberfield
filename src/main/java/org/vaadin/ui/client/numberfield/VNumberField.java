@@ -34,7 +34,9 @@ import com.vaadin.client.ui.VTextField;
  */
 public class VNumberField extends VTextField {
 
-    /** For internal use only. May be removed or replaced in the future. */
+    /**
+     * For internal use only. May be removed or replaced in the future.
+     */
     public NumberFieldState attributes = new NumberFieldState();
 
     private KeyPressHandler keyPressHandler = new KeyPressHandler() {

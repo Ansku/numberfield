@@ -35,15 +35,15 @@ public abstract class NumberValidator {
      * Checks whether a string represents a valid decimal number.
      *
      * @param toCheck
-     *            The string to check.
+     *         The string to check.
      * @param attr
-     *            The validity is checked on the basis of the settings in the
-     *                given {@link NumberFieldState} object.
+     *         The validity is checked on the basis of the settings in the
+     *         given {@link NumberFieldState} object.
      * @return True, if the given string represents a valid decimal number,
      * otherwise false.
      */
     public static boolean isValidDecimal(String toCheck, NumberFieldState attr,
-                                         boolean isFormatted) {
+            boolean isFormatted) {
         String groupingSeparator = attr.isGroupingUsed() ? attr
                 .getEscapedGroupingSeparator() : "";
 
@@ -61,15 +61,15 @@ public abstract class NumberValidator {
      * Checks whether a string represents a valid integer number.
      *
      * @param toCheck
-     *            The string to check.
+     *         The string to check.
      * @param attr
-     *            The validity is checked on the basis of the settings in the
-     *                given {@link NumberFieldState} object.
+     *         The validity is checked on the basis of the settings in the
+     *         given {@link NumberFieldState} object.
      * @return True, if the given string represents a valid integer number,
      * otherwise false.
      */
     public static boolean isValidInteger(String toCheck, NumberFieldState attr,
-                                         boolean isFormatted) {
+            boolean isFormatted) {
         String groupingSeparator = attr.isGroupingUsed() ? attr
                 .getEscapedGroupingSeparator() : "";
 
@@ -86,7 +86,7 @@ public abstract class NumberValidator {
     }
 
     private static boolean isWithinBoundsAndMatchesRegExp(String toCheck,
-                                                          String regExp, NumberFieldState attr, boolean isFormatted) {
+            String regExp, NumberFieldState attr, boolean isFormatted) {
         // "-" -> "-0"
         if (Constants.NEGATIVE_PREFIX.equals(toCheck)) {
             toCheck = Constants.NEGATIVE_PREFIX + "0";
