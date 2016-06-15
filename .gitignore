@@ -1,7 +1,10 @@
+/src/main/resources/rebel.xml
+/numberfield.iml
+/.idea
 /.apt_generated/
 /.settings/
 /WebContent/WEB-INF/
-/WebContent/VAADIN/widgetsets/
+/src/test/webapp/VAADIN/widgetsets/
 */rebel.xml
 .project
 .classpath
