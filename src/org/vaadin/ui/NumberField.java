@@ -321,7 +321,7 @@ public class NumberField extends TextField {
                 synchronized (decimalFormat) {
                     setDecimalFormatToNumberFieldAttributes();
                     if (newValue != null && newValue.trim().equals("")) {
-                        variables.put("text", null);
+                        variables.put("text", "");
                     } else {
                         Number valueAsNumber = decimalFormat.parse(newValue);
                         variables.put("text", valueAsNumber.toString());
