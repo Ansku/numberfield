@@ -283,7 +283,7 @@ public class NumberField extends TextField {
      */
     @Override
     public boolean isValid() {
-        return validateValue(getValue());
+        return super.isValid() && validateValue(getValue());
     }
 
     private void updateFormattedValue() {
