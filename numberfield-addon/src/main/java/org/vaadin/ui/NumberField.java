@@ -276,13 +276,14 @@ public class NumberField extends TextField {
     /**
      * Validates the field's value according to the validation rules determined
      * with the setters of this class (e.g. {@link #setDecimalAllowed(boolean)}
-     * or {@link #setMaxValue(double)}).
+     * or {@link #setMaxValue(double)}), as well as any other validation given
+     * for the field.
      *
      * @return True, if validation succeeds; false, if validation fails.
      */
     @Override
     public boolean isValid() {
-        return validateValue(getValue());
+        return super.isValid() && validateValue(getValue());
     }
 
     private void updateFormattedValue() {
