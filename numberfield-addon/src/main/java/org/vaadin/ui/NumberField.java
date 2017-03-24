@@ -53,9 +53,9 @@ import com.vaadin.ui.TextField;
  * </p>
  * <p>
  * A user-entered value is formatted automatically when the field's focus is
- * lost. <code>NumberField</code> uses {@link DecimalFormat} for formatting and
- * send the formatted value of the input back to client. There's a number of
- * setters to define the format, see the code example below for a general view.
+ * lost. {@code NumberField} uses {@link DecimalFormat} for formatting and send
+ * the formatted value of the input back to client. There's a number of setters
+ * to define the format, see the code example below for a general view.
  * </p>
  * <p>
  * Some features in an usage example: <blockquote>
@@ -104,11 +104,10 @@ public class NumberField extends TextField {
 
     /**
      * <p>
-     * Constructs an empty <code>NumberField</code> with no caption. The field
-     * is bound to a server-side validator (see
-     * {@link #addServerSideValidator()}) and immediate mode is set to true;
-     * this is necessary for the validation of the field to occur immediately
-     * when the input focus changes.
+     * Constructs an empty {@code NumberField} with no caption. The field is
+     * bound to a server-side validator (see {@link #addServerSideValidator()})
+     * and immediate mode is set to true; this is necessary for the validation
+     * of the field to occur immediately when the input focus changes.
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
@@ -132,11 +131,10 @@ public class NumberField extends TextField {
 
     /**
      * <p>
-     * Constructs an empty <code>NumberField</code> with given caption. The
-     * field is bound to a server-side validator (see
-     * {@link #addServerSideValidator()}) and immediate mode is set to true;
-     * this is necessary for the validation of the field to occur immediately
-     * when the input focus changes.
+     * Constructs an empty {@code NumberField} with given caption. The field is
+     * bound to a server-side validator (see {@link #addServerSideValidator()})
+     * and immediate mode is set to true; this is necessary for the validation
+     * of the field to occur immediately when the input focus changes.
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
@@ -356,7 +354,7 @@ public class NumberField extends TextField {
      * <p>
      * Binds the field to a server-side validator. The validation (is it a valid
      * integer/decimal number?) provides feedback about bad input. If the input
-     * is recognized as invalid, an {@link InvalidValueException} is thrown,
+     * is recognised as invalid, an {@link InvalidValueException} is thrown,
      * which reports an error message and mark the field as invalid. The error
      * message can be set with {@link #setErrorText(String)}.
      * </p>
@@ -464,8 +462,8 @@ public class NumberField extends TextField {
     /**
      * @param text
      *            The error text to display in case of an invalid field value.<br>
-     *            Caution: If the argument is "" or <code>null</code>, the field
-     *            won't be recognizable as invalid!
+     *            Caution: If the argument is "" or {@code null}, the field
+     *            won't be recognisable as invalid!
      */
     public void setErrorText(String text) {
         errorText = text;
