@@ -15,7 +15,7 @@
  * the License.
  */
 
-package org.vaadin.ui;
+package org.vaadin.v7.ui;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -25,16 +25,15 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.vaadin.ui.shared.numberfield.NumberFieldState;
-import org.vaadin.ui.shared.numberfield.NumberValidator;
+import org.vaadin.v7.ui.shared.numberfield.NumberFieldState;
+import org.vaadin.v7.ui.shared.numberfield.NumberValidator;
 
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.data.Property;
-import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.data.util.converter.StringToDoubleConverter;
-import com.vaadin.ui.TextField;
+import com.vaadin.v7.data.Validator;
+import com.vaadin.v7.data.Validator.InvalidValueException;
+import com.vaadin.v7.data.util.converter.Converter.ConversionException;
+import com.vaadin.v7.data.util.converter.StringToDoubleConverter;
+import com.vaadin.v7.ui.TextField;
 
 /**
  * <p>
@@ -85,7 +84,7 @@ import com.vaadin.ui.TextField;
  * </blockquote>
  */
 @StyleSheet("numberfield.css")
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "deprecation" })
 public class NumberField extends TextField {
 
     // Server-side validator
@@ -118,14 +117,9 @@ public class NumberField extends TextField {
      */
     public NumberField() {
         super();
-        setImmediate(true);
         setDefaultValues();
-        addValueChangeListener(new Property.ValueChangeListener() {
-
-            @Override
-            public void valueChange(Property.ValueChangeEvent event) {
-                updateFormattedValue();
-            }
+        addValueChangeListener(e -> {
+            updateFormattedValue();
         });
     }
 
@@ -208,14 +202,14 @@ public class NumberField extends TextField {
             @Override
             public Double convertToModel(String value,
                     Class<? extends Double> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
                 return super.convertToModel(value, targetType, Locale.US);
             }
 
             @Override
             public String convertToPresentation(Double value,
                     Class<? extends String> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
+                    throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
                 String result = super.convertToPresentation(value, targetType,
                         Locale.US);
                 if (result != null) {
