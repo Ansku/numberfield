@@ -3,13 +3,15 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vaadin.ui</groupId>
     <artifactId>numberfield-root</artifactId>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>NumberField Add-on Root Project</name>
 
 	<modules>
 		<module>numberfield-addon</module>
 		<module>numberfield-demo</module>
+        <module>numberfield-compatibility-addon</module>
+        <module>numberfield-compatibility-demo</module>
 	</modules>
 
 	<profiles>

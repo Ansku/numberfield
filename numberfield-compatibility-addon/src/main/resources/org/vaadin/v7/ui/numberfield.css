@@ -1,0 +1,7 @@
+.numberfield {
+	text-align: right !important;
+}
+
+.numberfield-error {
+	background: #F9E5E5 url(error_underline.png) bottom left repeat-x !important;
+}
