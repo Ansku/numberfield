@@ -2,8 +2,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vaadin.ui</groupId>
-    <artifactId>numberfield</artifactId>
-    <version>0.1.8-SNAPSHOT</version>
+    <artifactId>NumberField</artifactId>
+    <version>0.1.8</version>
     <name>NumberField (Vaadin 7)</name>
 
     <properties>

@@ -4,7 +4,7 @@
     <groupId>org.vaadin.ui</groupId>
     <artifactId>numberfield-demo</artifactId>
     <packaging>war</packaging>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.8</version>
     <name>NumberField (Vaadin 7) Demo</name>
 
     <properties>
