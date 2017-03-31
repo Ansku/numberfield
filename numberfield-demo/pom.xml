@@ -4,15 +4,15 @@
     <groupId>org.vaadin.ui</groupId>
     <artifactId>numberfield-demo</artifactId>
     <packaging>war</packaging>
-    <version>0.1.8</version>
-    <name>NumberField (Vaadin 7) Demo</name>
+    <version>0.2.0</version>
+    <name>NumberField (Vaadin 8) Demo</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <vaadin.version>7.6.4</vaadin.version>
-        <vaadin.plugin.version>7.7.7</vaadin.plugin.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <vaadin.version>8.0.4</vaadin.version>
+        <vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
         <jetty.plugin.version>9.3.9.v20160517</jetty.plugin.version>
     </properties>
 

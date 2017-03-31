@@ -2,15 +2,15 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.vaadin.ui</groupId>
-    <artifactId>NumberField</artifactId>
-    <version>0.1.8</version>
-    <name>NumberField (Vaadin 7)</name>
+    <artifactId>numberfield</artifactId>
+    <version>0.2.0</version>
+    <name>NumberField (Vaadin 8)</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <vaadin.version>7.6.4</vaadin.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <vaadin.version>8.0.4</vaadin.version>
         <vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
 
         <!-- ZIP Manifest fields -->
@@ -31,7 +31,7 @@
         <url>git://github.com/Ansku/numberfield.git</url>
         <connection>scm:git:git://github.com/Ansku/numberfield.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:/Ansku/${ComponentClassName}.git</developerConnection>
-        <tag>NumberField (Vaadin 7)</tag>
+        <tag>NumberField (Vaadin 8)</tag>
     </scm>
 
     <issueManagement>

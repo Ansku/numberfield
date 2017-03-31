@@ -25,18 +25,12 @@ import org.vaadin.ui.NumberField;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.data.Item;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.Binder;
+import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.DefaultFieldFactory;
-import com.vaadin.ui.Field;
-import com.vaadin.ui.Form;
-import com.vaadin.ui.FormFieldFactory;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -61,9 +55,7 @@ public class NumberFieldUI extends UI {
 
         addDefaultTest();
         addTestForRetrievingValue();
-        addForm();
-        addAnotherForm();
-        addFieldGroup();
+        addBinderTest();
     }
 
     private void addDefaultTest() {
@@ -117,7 +109,6 @@ public class NumberFieldUI extends UI {
         startHour.setMaxValue(59);
         startHour.setErrorText("global_invalid_format");
         startHour.setWidth("60px");
-        startHour.setImmediate(true);
         layout.addComponent(startHour);
 
         Button checkValueButton = new Button("Get current value");
@@ -136,10 +127,9 @@ public class NumberFieldUI extends UI {
         mainLayout.addComponent(layout);
     }
 
-    @SuppressWarnings("deprecation")
-    private void addForm() {
+    private void addBinderTest() {
         VerticalLayout layout = createLayout();
-        layout.setCaption("Form with FormFieldFactory");
+        layout.setCaption("Using Binder");
         final NumberField numberField = new NumberField();
         numberField.setLocale(Locale.FRANCE);
         numberField.setCaption("Modified settings:");
@@ -150,85 +140,21 @@ public class NumberFieldUI extends UI {
         numberField.setMinimumFractionDigits(2);
         numberField.setMinValue(5);
 
-        Form form = new Form();
-        form.setFormFieldFactory(new FormFieldFactory() {
+        TextField anotherNumberField = new TextField("placeholder textfield");
+        TextField randomStringField = new TextField("placeholder textfield");
 
-            @Override
-            public Field<?> createField(Item item, Object propertyId,
-                    Component uiContext) {
-                if ("number".equals(propertyId)) {
-                    return numberField;
-                } else {
-                    return new TextField("placeholder textfield");
-                }
-            }
-        });
-        BeanItem<Bean> beanItem = new BeanItem<Bean>(new Bean());
-        form.setItemDataSource(beanItem);
-        layout.addComponent(form);
+        final Binder<Bean> binder = new Binder<>(Bean.class);
+        binder.forField(numberField)
+                .withConverter(NumberField.getConverter("Conversion error"))
+                .bind("number");
+        binder.forField(anotherNumberField)
+                .withConverter(new StringToDoubleConverter("Conversion error"))
+                .bind("anotherNumber");
+        binder.forField(randomStringField).bind("randomString");
+        binder.setBean(new Bean());
+        layout.addComponents(numberField, anotherNumberField,
+                randomStringField);
         mainLayout.addComponent(layout);
-    }
-
-    @SuppressWarnings({ "deprecation", "unchecked" })
-    private void addAnotherForm() {
-        VerticalLayout layout = createLayout();
-        layout.setCaption("Form with DefaultFieldFactory");
-        final NumberField numberField = new NumberField();
-        numberField.setLocale(Locale.FRANCE);
-        numberField.setCaption("Modified settings:");
-        numberField.setDecimalPrecision(2);
-        numberField.setDecimalSeparator(',');
-        numberField.setGroupingSeparator('.');
-        numberField.setDecimalSeparatorAlwaysShown(true);
-        numberField.setMinimumFractionDigits(2);
-        numberField.setMinValue(5);
-
-        Form form = new Form();
-        form.setFormFieldFactory(new DefaultFieldFactory() {
-
-            @Override
-            public Field<?> createField(Item item, Object propertyId,
-                    Component uiContext) {
-                if ("number".equals(propertyId)) {
-                    return numberField;
-                } else {
-                    return super.createField(item, propertyId, uiContext);
-                }
-            }
-        });
-        BeanItem<Bean> beanItem = new BeanItem<Bean>(new Bean());
-        form.setItemDataSource(beanItem);
-        layout.addComponent(form);
-        mainLayout.addComponent(layout);
-    }
-
-    private void addFieldGroup() {
-        VerticalLayout layout = createLayout();
-        layout.setCaption("FieldGroup");
-        BeanItem<Bean> beanItem = new BeanItem<Bean>(new Bean());
-        BeanFieldGroup<Bean> fieldGroup = new BeanFieldGroup<NumberFieldUI.Bean>(
-                Bean.class);
-        fieldGroup.setItemDataSource(beanItem);
-        for (Object propertyId : fieldGroup.getUnboundPropertyIds()) {
-            Field<?> field;
-            if ("number".equals(propertyId)) {
-                NumberField numberField = new NumberField();
-                numberField.setLocale(Locale.FRANCE);
-                numberField.setCaption("Modified settings:");
-                numberField.setDecimalPrecision(2);
-                numberField.setDecimalSeparator(',');
-                numberField.setGroupingSeparator('.');
-                numberField.setDecimalSeparatorAlwaysShown(true);
-                numberField.setMinimumFractionDigits(2);
-                numberField.setMinValue(5);
-                field = numberField;
-                fieldGroup.bind(field, propertyId);
-            } else {
-                field = fieldGroup.buildAndBind(propertyId);
-            }
-            layout.addComponent(field);
-            mainLayout.addComponent(layout);
-        }
     }
 
     private VerticalLayout createLayout() {
