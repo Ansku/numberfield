@@ -17,13 +17,13 @@
 
 package org.vaadin.ui.shared.numberfield;
 
-import com.vaadin.shared.ui.textfield.AbstractTextFieldState;
+import com.vaadin.shared.ui.textfield.TextFieldState;
 
 /**
  * Data holder class for the properties of a <code>NumberField</code> instance.
  */
 @SuppressWarnings("serial")
-public class NumberFieldState extends AbstractTextFieldState {
+public class NumberFieldState extends TextFieldState {
 
     private boolean negativesAllowed = true;
     private boolean decimalsAllowed = true;

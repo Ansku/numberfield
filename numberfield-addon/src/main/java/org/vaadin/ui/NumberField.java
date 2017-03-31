@@ -21,20 +21,25 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import org.vaadin.ui.shared.numberfield.NumberFieldState;
 import org.vaadin.ui.shared.numberfield.NumberValidator;
 
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.data.Property;
-import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.data.util.converter.StringToDoubleConverter;
+import com.vaadin.data.Result;
+import com.vaadin.data.ValueContext;
+import com.vaadin.data.converter.StringToDoubleConverter;
+import com.vaadin.event.FieldEvents.BlurEvent;
+import com.vaadin.event.FieldEvents.FocusEvent;
+import com.vaadin.server.ErrorMessage;
+import com.vaadin.server.UserError;
+import com.vaadin.shared.Registration;
+import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
+import com.vaadin.shared.ui.textfield.AbstractTextFieldServerRpc;
 import com.vaadin.ui.TextField;
+
+import elemental.json.Json;
 
 /**
  * <p>
@@ -46,39 +51,41 @@ import com.vaadin.ui.TextField;
  * Inputs are validated on client- <b>and</b> server-side. The client-side
  * validator gets active on every keypress in the field. If the keypress would
  * lead to an invalid value, it is suppressed and the value remains unchanged.
- * The server-side validation is triggered when the field loses focus, see
- * {@link #addServerSideValidator()} for more details. To omit server-side
+ * The server-side validation is triggered at {@link ValueChangeEvent}, see
+ * {@link #addServerSideValidation()} for more details. To omit server-side
  * validation (which is enabled per default), you can call
- * {@link #removeServerSideValidator()}.
+ * {@link #removeServerSideValidation()}.
  * </p>
  * <p>
  * A user-entered value is formatted automatically when the field's focus is
- * lost. {@code NumberField} uses {@link DecimalFormat} for formatting and send
- * the formatted value of the input back to client. There's a number of setters
- * to define the format, see the code example below for a general view.
+ * lost. {@code NumberField} uses {@link DecimalFormat} for formatting and
+ * sending the formatted value of the input back to client. There's a number of
+ * setters to define the format, see the code example below for a general view.
  * </p>
  * <p>
  * Some features in an usage example: <blockquote>
  *
  * <pre>
  * NumberField numField = new NumberField(); // NumberField extends TextField
- * numField.setDecimalAllowed(true); // not just integers (by default, decimals are
- * // allowed)
- * numField.setDecimalPrecision(2); // maximum 2 digits after the decimal separator
+ * numField.setDecimalAllowed(true); // not just integers (by default, decimals
+ *                                   // are allowed)
+ * numField.setDecimalPrecision(2); // maximum 2 digits after the decimal
+ *                                  // separator
  * numField.setDecimalSeparator(','); // e.g. 1,5
  * numField.setDecimalSeparatorAlwaysShown(true); // e.g. 12345 -&gt; 12345,
  * numField.setMinimumFractionDigits(2); // e.g. 123,4 -&gt; 123,40
  * numField.setGroupingUsed(true); // use grouping (e.g. 12345 -&gt; 12.345)
  * numField.setGroupingSeparator('.'); // use '.' as grouping separator
- * numField.setGroupingSize(3); // 3 digits between grouping separators: 12.345.678
+ * numField.setGroupingSize(3); // 3 digits between grouping separators:
+ *                              // 12.345.678
  * numField.setMinValue(0); // valid values must be &gt;= 0 ...
  * numField.setMaxValue(999.9); // ... and &lt;= 999.9
  * numField.setErrorText(&quot;Invalid number format!&quot;); // feedback message on bad
- * // input
+ *                                                  // input
  * numField.setNegativeAllowed(false); // prevent negative numbers (defaults to
- * // true)
+ *                                     // true)
  * numField.setValueIgnoreReadOnly(&quot;10&quot;); // set the field's value, regardless
- * // whether it is read-only or not
+ *                                        // of whether it is read-only or not
  * numField.removeValidator(); // omit server-side validation
  * </pre>
  *
@@ -88,8 +95,49 @@ import com.vaadin.ui.TextField;
 @SuppressWarnings("serial")
 public class NumberField extends TextField {
 
-    // Server-side validator
-    private Validator numberValidator;
+    private final class NumberFieldServerRpcImpl
+            implements AbstractTextFieldServerRpc {
+
+        @Override
+        public void setText(String text, int cursorPosition) {
+            if (text != null) {
+                try {
+                    synchronized (decimalFormat) {
+                        setDecimalFormatToNumberFieldAttributes();
+                        if (text.trim().equals("")) {
+                            text = "";
+                        } else {
+                            Number valueAsNumber = decimalFormat.parse(text);
+                            text = valueAsNumber.toString();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            updateDiffstate("text", Json.create(text));
+
+            lastKnownCursorPosition = cursorPosition;
+            setValue(text, true);
+        }
+    }
+
+    private final class NumberFieldFocusAndBlurRpcImpl
+            implements FocusAndBlurServerRpc {
+        @Override
+        public void blur() {
+            fireEvent(new BlurEvent(NumberField.this));
+        }
+
+        @Override
+        public void focus() {
+            fireEvent(new FocusEvent(NumberField.this));
+        }
+    }
+
+    // Server-side validation
+    private ValueChangeListener<String> numberValidator;
+    private Registration numberValidatorRegistration;
 
     // All NumberField instances share the same formatter and converter
     private static DecimalFormat decimalFormat = new DecimalFormat();
@@ -102,12 +150,14 @@ public class NumberField extends TextField {
     private int minimumFractionDigits;
     private boolean decimalSeparatorAlwaysShown;
 
+    private int lastKnownCursorPosition = -1;
+
     /**
      * <p>
-     * Constructs an empty {@code NumberField} with no caption. The field is
-     * bound to a server-side validator (see {@link #addServerSideValidator()})
-     * and immediate mode is set to true; this is necessary for the validation
-     * of the field to occur immediately when the input focus changes.
+     * Constructs an empty {@code NumberField} with no caption. The field has
+     * built-in server-side validation (see {@link #addServerSideValidation()});
+     * this is necessary for the validation of the field to occur immediately
+     * when the input focus changes.
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
@@ -117,24 +167,22 @@ public class NumberField extends TextField {
      * </p>
      */
     public NumberField() {
-        super();
-        setImmediate(true);
+        registerRpc(new NumberFieldServerRpcImpl());
+        registerRpc(new NumberFieldFocusAndBlurRpcImpl());
         setDefaultValues();
-        addValueChangeListener(new Property.ValueChangeListener() {
+        addValueChangeListener(e -> updateFormattedValue());
+    }
 
-            @Override
-            public void valueChange(Property.ValueChangeEvent event) {
-                updateFormattedValue();
-            }
-        });
+    @Override
+    public int getCursorPosition() {
+        return lastKnownCursorPosition;
     }
 
     /**
      * <p>
-     * Constructs an empty {@code NumberField} with given caption. The field is
-     * bound to a server-side validator (see {@link #addServerSideValidator()})
-     * and immediate mode is set to true; this is necessary for the validation
-     * of the field to occur immediately when the input focus changes.
+     * Constructs an empty {@code NumberField} with given caption. The field has
+     * server-side validation enabled by default (see
+     * {@link #addServerSideValidation()}).
      * </p>
      * <p>
      * The decimal/grouping separator defaults to the user's local
@@ -167,8 +215,7 @@ public class NumberField extends TextField {
         setDecimalPrecision(2);
         minimumFractionDigits = 0;
         decimalSeparatorAlwaysShown = false;
-        addServerSideValidator();
-        setNullSettingAllowed(true);
+        addServerSideValidation();
 
         // Set the decimal/grouping separator to the user's default locale
         getState().setDecimalSeparator(
@@ -179,109 +226,81 @@ public class NumberField extends TextField {
         // Member "attributes" defines some defaults as well!
     }
 
-    @Override
-    public void setConverter(Class<?> datamodelType) {
-        if (datamodelType.isAssignableFrom(Double.class)) {
-            if (converter == null) {
-                createConverter();
-            }
-            setConverter(converter);
-        } else {
-            super.setConverter(datamodelType);
-        }
-    }
-
     /**
-     * Creates a converter that always uses US Locale. This is necessary because
-     * localised internal values break validation.
+     * Returns a default converter for data binding needs. This converter always
+     * uses US locale, because localised internal values break validation.
      *
-     * FIXME: This is a quick hack to fix problems with binding. Correct
-     * solution would be to change the validation to respect localised values.
+     * NOTE: This converter isn't used by default, you need to add it to your
+     * Binder specifically!
+     *
+     * @return converter
      */
-    private void createConverter() {
-        converter = new StringToDoubleConverter() {
-            @Override
-            protected NumberFormat getFormat(Locale locale) {
-                return super.getFormat(Locale.US);
-            }
-
-            @Override
-            public Double convertToModel(String value,
-                    Class<? extends Double> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
-                return super.convertToModel(value, targetType, Locale.US);
-            }
-
-            @Override
-            public String convertToPresentation(Double value,
-                    Class<? extends String> targetType, Locale locale)
-                    throws com.vaadin.data.util.converter.Converter.ConversionException {
-                String result = super.convertToPresentation(value, targetType,
-                        Locale.US);
-                if (result != null) {
-                    // remove thousand groupings
-                    result = result.replaceAll(",", "");
+    public static StringToDoubleConverter getConverter(String errorMessage) {
+        if (converter == null) {
+            converter = new StringToDoubleConverter(errorMessage) {
+                @Override
+                protected NumberFormat getFormat(Locale locale) {
+                    return super.getFormat(Locale.US);
                 }
-                return result;
-            }
-        };
+
+                @Override
+                public Result<Double> convertToModel(String value,
+                        ValueContext context) {
+                    return super.convertToModel(value, context);
+                }
+
+                @Override
+                public String convertToPresentation(Double value,
+                        ValueContext context) {
+                    String result = super.convertToPresentation(value, context);
+                    if (result != null) {
+                        // remove thousand groupings
+                        result = result.replaceAll(",", "");
+                    }
+                    return result;
+                }
+            };
+        }
+        return converter;
     }
 
     private void createNumberValidator() {
         // Create our server-side validator
-        numberValidator = new Validator() {
-
-            public boolean isValid(Object value) {
-                return validateValue(value);
-            }
+        numberValidator = new ValueChangeListener<String>() {
 
             @Override
-            public void validate(Object value) throws InvalidValueException {
-                if (!isValid(value)) {
-                    throw new InvalidValueException(errorText);
+            public void valueChange(ValueChangeEvent<String> event) {
+                if (validateValue(event.getValue())) {
+                    ErrorMessage componentError = getComponentError();
+                    if (componentError instanceof UserError) {
+                        String message = ((UserError) componentError).getMessage();
+                        if ((errorText != null && errorText.equals(message))
+                                || (errorText == null && message == null)) {
+                            setComponentError(null);
+                        }
+                    }
+                } else {
+                    setComponentError(new UserError(errorText));
                 }
             }
-
         };
     }
 
-    private boolean validateValue(Object value) {
+    private boolean validateValue(String value) {
         if (value == null || "".equals(value)) {
-            return !isRequired();
-        }
-
-        // FIXME: This is a hack to get around converters.
-        if (value instanceof Double) {
-            value = BigDecimal.valueOf((Double) value).toPlainString();
-        }
-
-        if (!(value instanceof String)) {
-            return false;
+            return !isRequiredIndicatorVisible();
         }
 
         final boolean isValid;
         if (isDecimalAllowed()) {
-            isValid = NumberValidator.isValidDecimal((String) value,
+            isValid = NumberValidator.isValidDecimal(value,
                     getState(), false);
         } else {
-            isValid = NumberValidator.isValidInteger((String) value,
+            isValid = NumberValidator.isValidInteger(value,
                     getState(), false);
         }
 
         return isValid;
-    }
-
-    /**
-     * Validates the field's value according to the validation rules determined
-     * with the setters of this class (e.g. {@link #setDecimalAllowed(boolean)}
-     * or {@link #setMaxValue(double)}), as well as any other validation given
-     * for the field.
-     *
-     * @return True, if validation succeeds; false, if validation fails.
-     */
-    @Override
-    public boolean isValid() {
-        return super.isValid() && validateValue(getValue());
     }
 
     private void updateFormattedValue() {
@@ -289,7 +308,7 @@ public class NumberField extends TextField {
     }
 
     private String getValueAsFormattedDecimalNumber() {
-        Object value = getValue();
+        String value = getValue();
         if (value == null || "".equals(value)) {
             return "";
         }
@@ -303,34 +322,8 @@ public class NumberField extends TextField {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return value.toString();
+            return value;
         }
-    }
-
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        if (variables.containsKey("text") && !isReadOnly()) {
-            // Workaround so that we can modify the values
-            variables = new HashMap<String, Object>(variables);
-            // Only do the setting if the string representation of the value
-            // has been updated
-            String newValue = (String) variables.get("text");
-            try {
-                synchronized (decimalFormat) {
-                    setDecimalFormatToNumberFieldAttributes();
-                    if (newValue != null && newValue.trim().equals("")) {
-                        variables.put("text", "");
-                    } else {
-                        Number valueAsNumber = decimalFormat.parse(newValue);
-                        variables.put("text", valueAsNumber.toString());
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        super.changeVariables(source, variables);
     }
 
     private void setDecimalFormatToNumberFieldAttributes() {
@@ -352,39 +345,36 @@ public class NumberField extends TextField {
 
     /**
      * <p>
-     * Binds the field to a server-side validator. The validation (is it a valid
+     * Adds server-side validation to the field. The validation (is it a valid
      * integer/decimal number?) provides feedback about bad input. If the input
-     * is recognised as invalid, an {@link InvalidValueException} is thrown,
-     * which reports an error message and mark the field as invalid. The error
+     * is recognised as invalid the field is marked as invalid. The error
      * message can be set with {@link #setErrorText(String)}.
      * </p>
-     * <p>
-     * To have the validation done immediately when the field loses focus,
-     * immediate mode should not be disabled (state is enabled per default).
-     * </p>
      */
-    public void addServerSideValidator() {
+    public void addServerSideValidation() {
         if (numberValidator == null) {
             createNumberValidator();
         }
-        super.addValidator(numberValidator);
+        numberValidatorRegistration = super.addValueChangeListener(
+                numberValidator);
     }
 
     /**
-     * Removes the field's validator.
+     * Removes the default validation from the field.
      *
-     * @see #addServerSideValidator()
+     * @see #addServerSideValidation()
      */
-    public void removeServerSideValidator() {
-        super.removeValidator(numberValidator);
+    public void removeServerSideValidation() {
+        if (numberValidatorRegistration != null) {
+            numberValidatorRegistration.remove();
+        }
     }
 
     /**
      * @param newValue
      *            Sets the value of the field to a double.
      */
-    public void setValue(Double newValue) throws ReadOnlyException,
-            ConversionException {
+    public void setValue(Double newValue) {
         if (newValue == null) {
             super.setValue(null);
         } else {
@@ -714,7 +704,7 @@ public class NumberField extends TextField {
 
     /**
      * @return The field's value as a string representation of a decimal number
-     *         with '.' as decimal separator and cutted grouping separators.
+     *         with '.' as decimal separator and removed grouping separators.
      *         Example: If the field's value is "2.546,99", this method will
      *         return "2546.99". If the field is empty, "0" is returned.
      */
