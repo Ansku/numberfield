@@ -142,6 +142,7 @@ public class NumberField extends TextField {
     // All NumberField instances share the same formatter and converter
     private static DecimalFormat decimalFormat = new DecimalFormat();
     private static StringToDoubleConverter converter;
+    private static NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
 
     // Settings needed only on server-side and therefore not part of
     // NumberFieldAttributes
@@ -317,7 +318,8 @@ public class NumberField extends TextField {
             synchronized (decimalFormat) {
                 setDecimalFormatToNumberFieldAttributes();
                 // Number valueAsNumber = decimalFormat.parse(value);
-                Number valueAsNumber = Double.valueOf(value.toString());
+                Number valueAsNumber = numberFormat.parse(value);
+                
                 return decimalFormat.format(valueAsNumber);
             }
         } catch (Exception e) {
